@@ -2,6 +2,14 @@
 
 - hosts: localhost
   connection: local
-  pre_tasks:
-   - copy: src=tdd_provisioning.yml dest=./tdd_provisioning.yml
-   - copy: src=gitignore dest=./.gitignore
+  tasks:
+   - name: Create Provisioning template
+     copy: src=templates/tdd_provisioning.yml dest=./tdd_provisioning.yml
+   - name: Create gitignore
+     copy: src=templates/gitignore dest=./.gitignore
+
+   - name: Creates test directory
+     file: path=test/ansible-tdd/intergration/suite-name state=directory recurse=true
+
+   - name: Create sample file playbook
+     copy: src=templates/suite-playbook-default.yml dest=./test/ansible-tdd/intergration/suite-name
