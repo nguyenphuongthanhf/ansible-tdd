@@ -1,0 +1,7 @@
+---
+
+- hosts: localhost
+  connection: local
+  pre_tasks:
+   - copy: src=tdd_provisioning.yml dest=./tdd_provisioning.yml
+   - copy: src=gitignore dest=./.gitignore

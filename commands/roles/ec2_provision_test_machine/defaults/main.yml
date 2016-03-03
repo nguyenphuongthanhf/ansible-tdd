@@ -1,0 +1,9 @@
+aws_tags: ''
+aws_region: ''
+aws_instance_type: ''
+aws_image_id: ''
+aws_keyname: ''
+inventory_groups: ''
+ec2_inventory: ""
+ansible_ssh_user: ""
+ansible_port: 22

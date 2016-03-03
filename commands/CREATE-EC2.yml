@@ -1,0 +1,14 @@
+---
+
+- hosts: localhost
+  connection: local
+  vars:
+    ec2_inventory: "./tdd_ec2_inventory.ini"
+    no_log: True
+  pre_tasks:
+   - include_vars: "{{ item }}"
+     with_first_found:
+        - "{{tdd_provisioning}}"
+
+  roles:
+    - ec2_provision_test_machine

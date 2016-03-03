@@ -1,0 +1,8 @@
+{% set index = 1 %}
+{% for ec2_info in ec2.results %}
+[{{ec2_info.item.group}}]
+{% for ec2_instance in ec2_info.tagged_instances %}
+{{ec2_info.item.group}}{{index}} ansible_host={{ec2_instance.public_ip}} ansible_ssh_user={{ec2_info.item.ansible_ssh_user}} ansible_port={{ec2_info.item.ansible_port}} instance_id={{ec2_instance.id}} aws_region={{ec2_info.item.aws_region}}
+{% set index = index + 1 %}
+{% endfor %}
+{% endfor %}

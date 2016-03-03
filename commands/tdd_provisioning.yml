@@ -1,0 +1,30 @@
+provision:
+  app_name: ansible-tdd
+  servers:
+    - group: webserver
+      hostname: web
+      num_instances: 1
+      vpc_subnet_id: 'subnet-8bf53ed2'
+      assign_public_ip: yes
+      aws_region: 'us-west-2'
+      aws_instance_type: 't2.nano'
+      aws_image_id: 'ami-2610f246'
+      aws_keyname: 'thanhnp'
+      inventory_groups: ''
+      ansible_ssh_user: "centos"
+      ansible_port: 22
+#    - group: cached
+#      hostname: cached-server
+#      num_instances: 2
+#      vpc_subnet_id: 'subnet-8bf53ed2'
+#      assign_public_ip: yes
+#      aws_region: 'us-west-2'
+#      aws_instance_type: 't2.nano'
+#      aws_image_id: 'ami-2610f246'
+#      aws_keyname: 'thanhnp'
+#      inventory_groups: ''
+#      ansible_ssh_user: "centos"
+#      ansible_port: 22
+
+  
+  
