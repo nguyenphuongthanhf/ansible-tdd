@@ -25,6 +25,8 @@ provision:
 #      inventory_groups: ''
 #      ansible_ssh_user: "centos"
 #      ansible_port: 22
+suites:
+  - suite-name
 
   
   

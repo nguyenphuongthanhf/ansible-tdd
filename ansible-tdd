@@ -124,7 +124,7 @@ case $command in
 
     create)
         ## RUN CREATE NEW EC2 INSTANCE
-        ansible-playbook $EXECUTING_BASH_PATH/commands/CREATE-EC2.yml --extra-vars "tdd_provisioning=$CURRENT_PATH/tdd_provisioning.yml"
+        ansible-playbook $EXECUTING_BASH_PATH/commands/CREATE-EC2.yml --extra-vars "tdd_provisioning=$CURRENT_PATH/ansible_tdd.yml"
     shift # past argument
     ;;
 
