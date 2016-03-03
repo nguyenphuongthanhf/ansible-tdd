@@ -24,6 +24,7 @@
         key_name: '{{item.aws_keyname}}'
         image: '{{item.aws_image_id}}'
         group:
+          - "anphabe-hq"
           - "alltraffic-from-vpc"
         vpc_subnet_id: '{{item.vpc_subnet_id}}'
         assign_public_ip: '{{item.assign_public_ip}}'
