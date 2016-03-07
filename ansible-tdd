@@ -231,6 +231,8 @@ case $command in
         ec2_config
 
         server_do_action START
+        # regenerate config
+        ec2_create
     shift # past argument
     ;;
 

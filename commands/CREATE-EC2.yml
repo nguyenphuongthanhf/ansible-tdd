@@ -4,7 +4,7 @@
   connection: local
   vars:
     ec2_inventory: "./tdd_ec2_inventory.ini"
-    no_log: false
+    no_log: True
   pre_tasks:
     - include_vars: "{{ item }}"
       with_first_found:
@@ -35,7 +35,7 @@
         instance_type: '{{ item.instance_type|default("t2.nano") }}'
         image: '{{ item.image|default("ami-2610f246") }}'
         assign_public_ip: '{{ item.assign_public_ip|default("yes") }}'
-        group: '{{ item.group|default(["anphabe-hq", "alltraffic-from-vpc"]) }}'
+        group: '{{ item.group|default([ "alltraffic-from-vpc"]) }}'
         vpc_subnet_id: '{{ item.vpc_subnet_id|default("subnet-8bf53ed2") }}'
         wait: '{{ item.wait|default("yes") }}'
 

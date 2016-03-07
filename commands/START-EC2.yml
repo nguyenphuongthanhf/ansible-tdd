@@ -18,3 +18,6 @@
         instance_ids: "{{ instance_ids.split(',') }}"
         state: running
         wait: True
+      register: ec2
+
+
