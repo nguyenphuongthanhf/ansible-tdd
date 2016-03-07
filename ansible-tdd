@@ -146,11 +146,12 @@ ec2_create(){
 }
 
 ec2_config(){
-    if [ ! -f $CURRENT_PATH/tdd_ec2_inventory.ini ]  ||  [ ! -f $CURRENT_PATH/ansitlbe_tdd_inventory.yml ];
+    if [ ! -f $CURRENT_PATH/tdd_ec2_inventory.ini ]  ||  [ ! -f $CURRENT_PATH/ansible_tdd_inventory.yml ];
     then
        ec2_create
     fi
 }
+
 remove_all_old_ec2_config(){
     rm -rf $CURRENT_PATH/tdd_ec2_inventory.ini
     rm -rf $CURRENT_PATH/ansitlbe_tdd_inventory.yml
