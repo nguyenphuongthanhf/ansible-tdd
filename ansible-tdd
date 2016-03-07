@@ -141,10 +141,14 @@ usage () {
   exit 1
 }
 
+ec2_create(){
+   ansible-playbook $EXECUTING_BASH_PATH/commands/CREATE-EC2.yml --extra-vars "tdd_provisioning=$CURRENT_PATH/ansible_tdd.yml  vault_ec2_secret_access=$CURRENT_PATH/vault_ec2_secret_access.yml"  --ask-vault-pass
+}
+
 ec2_config(){
     if [ ! -f $CURRENT_PATH/tdd_ec2_inventory.ini ]  ||  [ ! -f $CURRENT_PATH/ansitlbe_tdd_inventory.yml ];
     then
-       server_do_action CREATE
+       ec2_create
     fi
 }
 remove_all_old_ec2_config(){
@@ -202,7 +206,7 @@ case $command in
 
     create)
         ## RUN CREATE NEW EC2 INSTANCE
-        ansible-playbook $EXECUTING_BASH_PATH/commands/CREATE-EC2.yml --extra-vars "tdd_provisioning=$CURRENT_PATH/ansible_tdd.yml  vault_ec2_secret_access=$CURRENT_PATH/vault_ec2_secret_access.yml"  --ask-vault-pass
+        ec2_create
     shift # past argument
     ;;
 
