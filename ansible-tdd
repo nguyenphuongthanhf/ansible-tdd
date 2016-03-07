@@ -238,8 +238,6 @@ case $command in
         ec2_config
 
         server_do_action STOP
-
-        remove_all_old_ec2_config
     shift # past argument
     ;;
 
@@ -247,8 +245,6 @@ case $command in
        ec2_config
 
        server_do_action TERMINATE
-
-       remove_all_old_ec2_config
     shift # past argument
     ;;
 

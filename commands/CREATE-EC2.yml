@@ -28,9 +28,10 @@
         key_name: '{{ item.key_name }}'
         region: '{{ item.region|default("us-west-2") }}'
         instance_tags: '{{ {"Name": provision.app_name~"-"~item.server_group,"app_name": provision.app_name,"group_server":item.server_group}|combine(item.instance_tags|default({}))  }}'
+        exact_count: '{{ item.num_instances|default(1) }}'
         volumes: '{{ item.volumes|default([ { "device_name": "/dev/sda1", "volume_size": 8, "delete_on_termination": true }]) }}' 
     #more than usage
-        exact_count: '{{ item.num_instances|default(1) }}'
+        
         instance_type: '{{ item.instance_type|default("t2.nano") }}'
         image: '{{ item.image|default("ami-2610f246") }}'
         assign_public_ip: '{{ item.assign_public_ip|default("yes") }}'
