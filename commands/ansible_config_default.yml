@@ -1,0 +1,95 @@
+- name: Start the sandbox instances
+  ec2:
+## required
+    aws_access_key: '{{ aws_access_key_id }}'
+    aws_secret_key: '{{ aws_secret_access_key }}'
+    key_name: '{{ item.key_name }}'
+    region: '{{ item.region|default("us-west-2") }}'
+
+    instance_tags: '{{ {"Name": provision.app_name~"-"~item.server_group,"app_name": provision.app_name,"group_server":item.group}|combine(item.instance_tags|default({}))  }}'
+    volumes: '{{ item.volumes|default([ { device_name: /dev/sda1, volume_size: 8, delete_on_termination: true }]) }}' 
+#more than usage
+    exact_count: '{{ item.num_instances|default(1) }}'
+    instance_type: '{{ item.instance_type|default(t2.nano) }}'
+    image: '{{ item.image|default(ami-2610f246) }}'
+    
+    state: '{{ item.state|default(running) }}'
+    assign_public_ip: '{{ item.assign_public_ip|default(yes) }}'
+    group: '{{ item.group|default(["anphabe-hq", "alltraffic-from-vpc"]) }}'
+    vpc_subnet_id: '{{ item.vpc_subnet_id|default(subnet-8bf53ed2) }}'
+    wait: '{{ item.wait|default(yes) }}'
+
+## less than usage        
+    count: '{{ item.count|default(1) }}'
+    count_tag: '{{ {"Name": provision.app_name~"-"~item.group} }}'
+    group_id: '{{ item.group_id|default({}) }}'
+    zone: '{{ item.zone|default(us-west-2c) }}' 
+    instance_ids: '{{ item.instance_ids|default({}) }}'
+    instance_profile_name: '{{ item.instance_profile_name|default("") }}'
+    kernel: '{{ item.kernel|default("") }}'
+    monitoring: '{{ item.monitoring|default(no) }}'
+    network_interfaces: '{{ item.network_interfaces|default({}) }}'
+    placement_group: '{{ item.placement_group|default("") }}'
+    private_ip: '{{ item.private_ip|default("") }}'
+    profile: '{{ item.profile|default("") }}'
+    ramdisk: '{{ item.ramdisk|default("") }}'
+    wait_timeout: '{{ item.wait_timeout|default(300) }}'
+    ec2_url: '{{ item.ec2_url|default("") }}'
+    ebs_optimized: '{{ item.ebs_optimized|default(false) }}'
+
+    security_token: '{{ item.security_token|default("") }}'
+    source_dest_check: '{{ item.source_dest_check|default(True) }}'
+
+    tenancy:  '{{ item.tenancy|default(default) }}'
+    termination_protection: '{{ tem.termination_protection|default(no) }}'
+    user_data: '{{ item.user_data|default("") }}'
+    validate_certs: '{{ item.validate_certs|default(yes) }}'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    aws_access_key: 
+    aws_secret_key: 
+    region: 
+    instance_type: 
+    key_name: 
+    image: '{{item.aws_image_id}}'
+    group:
+      - "anphabe-hq"
+      - "alltraffic-from-vpc"
+    vpc_subnet_id: '{{item.vpc_subnet_id}}'
+    assign_public_ip: '{{item.assign_public_ip}}'
+    wait: yes
+    instance_tags: '{{ {"Name": provision.app_name~"-"~item.group,"app_name": provision.app_name,"group_server":item.group, "tdd_ansible": "tdd-ansible"}  }}'
+    exact_count: '{{item.num_instances}}'
+    count_tag: '{{ {"Name": provision.app_name~"-"~item.group} }}'
+    volumes:
+      - device_name: /dev/sda1
+        volume_size: 8
+        delete_on_termination: true
+  register: ec2
+  with_items:
+    - "{{provision.servers}}"
+  no_log: "{{no_log}}"

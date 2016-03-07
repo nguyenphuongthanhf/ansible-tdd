@@ -7,7 +7,12 @@
 # note: if this is set to > 0 the /etc/hosts part is not recognized ( may be a bug )
 
 CURRENT_PATH="`pwd`"
-
 echo "alias ansible-tdd='$CURRENT_PATH/ansible-tdd'" | tee -a ~/.bashrc
 echo "alias atdd='$CURRENT_PATH/ansible-tdd'" | tee -a ~/.bashrc
+
+
+sudo pip install boto
+
+sudo gem install serverspec
+
 

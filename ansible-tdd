@@ -6,7 +6,8 @@
 # as in the --default example).
 # note: if this is set to > 0 the /etc/hosts part is not recognized ( may be a bug )
 
-EXECUTING_BASH_PATH="`dirname \"$0\"`"
+#EXECUTING_BASH_PATH="`dirname \"$0\"`"
+EXECUTING_BASH_PATH="$(dirname "$(readlink -f "$0")")"
 CURRENT_PATH="`pwd`"
 
 command=$1
@@ -60,13 +61,38 @@ server_do_action(){
                     tput setaf 2 # change text to green color
                     echo_info "$ACTION ALL SERVERS: ${instance_ids} at region: $aws_region"
                     tput sgr0  # reset text color
-                    ansible-playbook $EXECUTING_BASH_PATH/commands/$ACTION-EC2.yml --extra-vars "aws_region=$aws_region instance_ids=$instance_ids"
+                    ansible-playbook $EXECUTING_BASH_PATH/commands/$ACTION-EC2.yml  --extra-vars "aws_region=$aws_region instance_ids=$instance_ids vault_ec2_secret_access=$CURRENT_PATH/vault_ec2_secret_access.yml"   --ask-vault-pass
                 fi
             fi
 
         done < $CURRENT_PATH/tdd_ec2_inventory.ini
 }
 
+serverspec_run_with_testcase(){
+    suite_name=$1
+    if [ -z "${config}" ]; then
+        echo "RUN ALL TEST CASES";
+        suite_name="all"
+    fi
+
+    for i in $(ls -d $CURRENT_PATH/tests/ansible-tdd/integration/*); do
+        test_cases="$(basename ${i})"
+        export SUITE_TEST=test_cases
+
+        if [ $suite_name=="all" ]; then
+            SUITE_TEST=$suite_name
+        fi
+
+
+        if [ ! -f $CURRENT_PATH/tests/ansible-tdd/integration/$test_cases/mockup-playbook.yml ]; then
+             ansible-playbook -i $CURRENT_PATH/tdd_ec2_inventory.ini $CURRENT_PATH/tests/ansible-tdd/integration/$test_cases/mockup-playbook.yml   --ask-vault-pass
+        fi
+        rake spec
+
+        export SUITE_TEST=""
+    done
+
+}
 echo_info(){
     tput setaf 2 # change text to green color
     echo $1
@@ -97,16 +123,68 @@ usage () {
   echo "    destroy:    Stop and remove all aw2 instances"
   echo "    login:      Start a bash shell in a running container. EX:ansible-tdd login group-instance"
   echo "    list:       List all instances"
-  echo "    test:       Run CONVERGE * verify by serverspec"
+  echo "    test:       Run CONVERGE and verify by serverspec"
+  echo "    EX:"
+  echo "        atdd test playbook.yml"
   echo "    converge:   Bootstrap a container for the config based on a template"
+  echo "    EX:"
+  echo "        atdd converge playbook.yml"
   echo "    verify:     Only run serverspec verify server"
+  echo "    EX:"
+  echo "        Run a testcase"
+  echo "        atdd verify TEST-CASE-NAME "
+  echo "        Run all"
+  echo "        atdd verify"
+  echo "        atdd verify all"
   echo
   tput sgr0  # reset text color
   exit 1
 }
 
+ec2_config(){
+    if [ ! -f $CURRENT_PATH/tdd_ec2_inventory.ini ]  ||  [ ! -f $CURRENT_PATH/ansitlbe_tdd_inventory.yml ];
+    then
+       server_do_action CREATE
+    fi
+}
+remove_all_old_ec2_config(){
+    rm -rf $CURRENT_PATH/tdd_ec2_inventory.ini
+    rm -rf $CURRENT_PATH/ansitlbe_tdd_inventory.yml
+}
+
+login_to_instance (){
+    SERVER_GROUP=$1
+    if [ ! -f $CURRENT_PATH/tdd_ec2_inventory.ini ]; then
+             server_do_action CREATE
+    fi
+
+    if [  -z "${SERVER_GROUP}" ]
+    then
+        echo_error "Where do you want to go?"
+    fi
+    while IFS='= ' read var val
+    do
+
+        if [[ "$var" == "[$SERVER_GROUP]" ]]
+        then
+            # only get a first instance of group
+            read var val
+            echo "$val" >>  $CURRENT_PATH/SSH_INFO.cnf
+            source $CURRENT_PATH/SSH_INFO.cnf  # extract config
+            rm -rf $CURRENT_PATH/SSH_INFO.cnf
+
+            break
+        fi
+    done < $CURRENT_PATH/tdd_ec2_inventory.ini
+
+    if [ ! -z "${ansible_ssh_user}" ] && [ ! -z "${ansible_host}" ] && [ ! -z "${ansible_port}" ]
+    then
+        ssh $ansible_ssh_user@$ansible_host -p $ansible_port
+    fi
+
+}
 # My doesn't like uppercase characters, spaces or special characters, catch it now before we build everything out and then find out
-re='[A-Z/ !@#$%^&*()+~`=]'
+re='[A-Z !@#$%^&*()+~`=]'
 if [[ $config =~ $re ]];
   then
     echo
@@ -124,7 +202,7 @@ case $command in
 
     create)
         ## RUN CREATE NEW EC2 INSTANCE
-        ansible-playbook $EXECUTING_BASH_PATH/commands/CREATE-EC2.yml --extra-vars "tdd_provisioning=$CURRENT_PATH/ansible_tdd.yml"
+        ansible-playbook $EXECUTING_BASH_PATH/commands/CREATE-EC2.yml --extra-vars "tdd_provisioning=$CURRENT_PATH/ansible_tdd.yml  vault_ec2_secret_access=$CURRENT_PATH/vault_ec2_secret_access.yml"  --ask-vault-pass
     shift # past argument
     ;;
 
@@ -140,63 +218,49 @@ case $command in
     ;;
 
     login) # login to first instance in a group
-        if [  -z "${config}" ]
-        then
-            echo_error "Where do you want to go?"
-        fi
-        while IFS='= ' read var val
-        do
-
-            if [[ "$var" == "[$config]" ]]
-            then
-                # only get a first instance of group
-                read var val
-                echo "$val" >>  $CURRENT_PATH/SSH_INFO.cnf
-                source $CURRENT_PATH/SSH_INFO.cnf  # extract config
-                rm -rf $CURRENT_PATH/SSH_INFO.cnf
-
-                break
-            fi
-        done < $CURRENT_PATH/tdd_ec2_inventory.ini
-
-        if [ ! -z "${ansible_ssh_user}" ] && [ ! -z "${ansible_host}" ] && [ ! -z "${ansible_port}" ]
-        then
-            ssh $ansible_ssh_user@$ansible_host -p $ansible_port
-        fi
-
+        login_to_instance $config
     shift # past argument
     ;;
 
     start)
+        ec2_config
+
         server_do_action START
     shift # past argument
     ;;
+
     stop)
+        ec2_config
+
         server_do_action STOP
+
+        remove_all_old_ec2_config
     shift # past argument
     ;;
 
     destroy)
+       ec2_config
+
        server_do_action TERMINATE
+
+       remove_all_old_ec2_config
     shift # past argument
     ;;
 
     test)
         # RUN ANSIBLE
-       ansible-playbook -i $CURRENT_PATH/tdd_ec2_inventory.ini $CURRENT_PATH/$config
-
+       ansible-playbook -i $CURRENT_PATH/tdd_ec2_inventory.ini $CURRENT_PATH/$config  --ask-vault-pass
+       serverspec_run_with_testcase all
     shift # past argument
     ;;
 
     converge)
-        ansible-playbook -i $CURRENT_PATH/tdd_ec2_inventory.ini $CURRENT_PATH/$config
+        ansible-playbook -i $CURRENT_PATH/tdd_ec2_inventory.ini $CURRENT_PATH/$config   --ask-vault-pass
     shift # past argument
     ;;
 
     verify)
-        echo_warning "unfinish this feature"
-      # ansible-playbook -i $CURRENT_PATH/tdd_ec2_inventory.ini $CURRENT_PATH/$config
-
+        serverspec_run_with_testcase $config
     shift # past argument
     ;;
     

@@ -1,0 +1,58 @@
+---
+
+- hosts: localhost
+  connection: local
+  tasks:
+    - stat: path=./ansible_tdd.yml
+      register: ansible_tdd_config
+    - name: Create Provisioning template
+      copy: src=templates/ansible_tdd.yml dest=./ansible_tdd.yml
+      when: not ansible_tdd_config.stat.exists
+
+    - stat: path=./.gitignore
+      register: gitignore_config
+    - name: Create gitignore
+      copy: src=templates/gitignore dest=./.gitignore
+      when: not gitignore_config.stat.exists
+
+    - stat: path=./vault_ec2_secret_access.yml
+      register: vault_ec2_secret_access
+    - name: Create vault ec2
+      copy: src=templates/vault_ec2_secret_access.yml dest=./vault_ec2_secret_access.yml
+      when: not vault_ec2_secret_access.stat.exists
+
+    - name: Creates test directory
+      file: path=tests/ansible-tdd/integration/sample-testcases state=directory recurse=true
+
+    - stat: path=./tests/ansible-tdd/integration/sample-testcases/mockup-playbook.yml
+      register: suite_playbook_default_config
+    - name: Create sample file playbook
+      copy: src=templates/sample-mockup-playbook.yml dest=./tests/ansible-tdd/integration/sample-testcases
+      when: not suite_playbook_default_config.stat.exists
+
+    - stat: path=./Rakefile
+      register: rakefile_config
+    - name: Create standard rake file
+      copy: src=templates/Rakefile dest=./
+      when: not rakefile_config.stat.exists
+
+    - name: Creates test directory
+      file: path=tests/ansible-tdd/integration/sample-testcases/spec state=directory recurse=true
+
+    - stat: path=./tests/ansible-tdd/integration/sample-testcases/spec/sample_spec.rb
+      register: sample_spec
+    - name: Create sample spec testcase
+      copy: src=templates/sample_spec.rb dest=./tests/ansible-tdd/integration/sample-testcases/spec/sample_spec.rb
+      when: not sample_spec.stat.exists
+
+    - stat: path=./.rspec
+      register: rspec
+    - name: Create sample rspec testcase
+      copy: src=templates/rspec dest=./.rspec
+      when: not rspec.stat.exists
+
+    - stat: path=./tests/ansible-tdd/integration/sample-testcases/spec_helper.rb
+      register: spec_helper_config
+    - name: Create sample spec helper
+      copy: src=templates/spec_helper.rb dest=./tests/ansible-tdd/integration/sample-testcases
+      when: not spec_helper_config.stat.exists

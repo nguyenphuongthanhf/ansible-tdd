@@ -1,0 +1,84 @@
+---
+
+- hosts: localhost
+  connection: local
+  vars:
+    ec2_inventory: "./tdd_ec2_inventory.ini"
+    no_log: false
+  pre_tasks:
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "{{tdd_provisioning}}"
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "templates/ec2_secret_access.yml"
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "{{vault_ec2_secret_access}}"
+  tasks:
+    - file:
+        dest: "{{ec2_inventory}}"
+        state: absent
+
+    - name: Start the sandbox instances
+      ec2:
+    ## required
+        aws_access_key: '{{ aws_access_key_id }}'
+        aws_secret_key: '{{ aws_secret_access_key }}'
+        key_name: '{{ item.key_name }}'
+        region: '{{ item.region|default("us-west-2") }}'
+        instance_tags: '{{ {"Name": provision.app_name~"-"~item.server_group,"app_name": provision.app_name,"group_server":item.server_group}|combine(item.instance_tags|default({}))  }}'
+        volumes: '{{ item.volumes|default([ { "device_name": "/dev/sda1", "volume_size": 8, "delete_on_termination": true }]) }}' 
+    #more than usage
+        exact_count: '{{ item.num_instances|default(1) }}'
+        instance_type: '{{ item.instance_type|default("t2.nano") }}'
+        image: '{{ item.image|default("ami-2610f246") }}'
+        assign_public_ip: '{{ item.assign_public_ip|default("yes") }}'
+        group: '{{ item.group|default([ "alltraffic-from-vpc"]) }}'
+        vpc_subnet_id: '{{ item.vpc_subnet_id|default("subnet-8bf53ed2") }}'
+        wait: '{{ item.wait|default("yes") }}'
+
+    ## less than usage        
+       
+        count_tag: '{{ {"Name": provision.app_name~"-"~item.server_group} }}'
+        
+        zone: '{{ item.zone|default("us-west-2c") }}' 
+        instance_profile_name: '{{ item.instance_profile_name|default("") }}'
+        kernel: '{{ item.kernel|default("") }}'
+        monitoring: '{{ item.monitoring|default("no") }}'
+        placement_group: '{{ item.placement_group|default("") }}'
+        private_ip: '{{ item.private_ip|default("") }}'
+        profile: '{{ item.profile|default("") }}'
+        ramdisk: '{{ item.ramdisk|default("") }}'
+        wait_timeout: '{{ item.wait_timeout|default(300) }}'
+        ec2_url: '{{ item.ec2_url|default("") }}'
+        ebs_optimized: '{{ item.ebs_optimized|default("false") }}'
+
+        security_token: '{{ item.security_token|default("") }}'
+        source_dest_check: '{{ item.source_dest_check|default("True") }}'
+
+        tenancy:  '{{ item.tenancy|default("default") }}'
+        termination_protection: '{{ item.termination_protection|default("no") }}'
+        user_data: '{{ item.user_data|default("") }}'
+        validate_certs: '{{ item.validate_certs|default("yes") }}'
+      register: ec2
+      with_items:
+        - "{{provision.servers}}"
+      no_log: "{{no_log}}"
+
+    - name: Add new instance to host group
+      add_host: name="{{item.0.item.server_group}}-{{item.1.id}}" hostname="{{ item.1.public_ip }}" groupname="{{item.0.item.server_group}}" ansible_ssh_user="{{ item.0.item.ansible_ssh_user }}" ansible_port="{{ item.0.item.ansible_port }}" instances_id="{{item.1.id}}"
+      with_subelements:
+        - ec2.results
+        - tagged_instances
+      no_log: "{{no_log}}"
+
+    - name: Log inventory File
+      template:
+        src: "templates/ec2-inventory.j2"
+        dest: "{{ec2_inventory}}"
+
+    - name: Log inventory File for serverspec
+      template:
+        src: "templates/ansible_tdd_inventory.j2"
+        dest: "./ansible_tdd_inventory.yml"

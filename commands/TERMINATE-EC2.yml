@@ -1,0 +1,20 @@
+---
+
+- hosts: localhost
+  connection: local
+  pre_tasks:
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "templates/ec2_secret_access.yml"
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "{{vault_ec2_secret_access}}"
+  tasks:
+    - name: Terminate the sandbox instances
+      ec2:
+        aws_access_key: '{{aws_access_key_id }}'
+        aws_secret_key: '{{ aws_secret_access_key }}'
+        region: "{{ aws_region }}"
+        instance_ids: "{{ instance_ids.split(',') }}"
+        state: absent
+        wait: True
