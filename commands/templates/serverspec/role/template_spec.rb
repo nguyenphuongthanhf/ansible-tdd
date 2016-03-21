@@ -1,0 +1,1 @@
+require ENV['ATDD_ROLE_SPEC_HELPER']

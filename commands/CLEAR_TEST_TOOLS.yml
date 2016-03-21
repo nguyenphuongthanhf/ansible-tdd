@@ -1,0 +1,8 @@
+---
+
+- hosts: all
+  tasks:
+    - name: clear all test tools
+      become: yes
+      file: path=/ansible-tdd state=directory state=absent
+

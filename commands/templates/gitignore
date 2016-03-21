@@ -1,3 +1,2 @@
-.kitchen/
-.kitchen.local.yml
-tdd_ec2*
+
+*.retry

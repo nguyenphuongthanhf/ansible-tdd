@@ -1,0 +1,104 @@
+require 'rake'
+require 'rspec/core/rake_task'
+require 'yaml'
+
+
+def run_role_verify(playbook_directory, role_directory, host, ssh_user, role_name, role_uuid)
+  external_vars="#{playbook_directory}/.log/verify-roles/data/#{role_uuid}.json"
+
+  targets = []
+  Dir.glob("#{role_directory}/tests/ansible-tdd/integration/*").each do |dir|
+    next unless File.directory?(dir)
+    target = File.basename(dir)
+    target = "_#{target}" if target == "default"
+    targets << target
+  end
+
+  task :all => targets
+  task :default => :all
+
+  targets.each do |target|
+    desc "Run serverspec tests to role #{target}"
+    RSpec::Core::RakeTask.new(target.to_sym) do |t|
+      #init test environment
+      ENV["ATDD_TESTCASE_DIRECTORY"]= "#{role_directory}"
+      ENV["ATDD_EXTRA_VARS_VERIFY_ROLES_JSON"]= "#{external_vars}"
+      ENV["ATDD_ANSIBLE_HOSTNAME"]= "#{host}"
+      ENV["ATDD_ANSIBLE_SSH_USER"]= "#{ssh_user}"
+
+      t.pattern = "#{role_directory}/tests/ansible-tdd/integration/#{target}/spec/*_spec.rb"
+    end
+  end
+end
+
+def verify_all_roles(playbook_directory)
+  specific_test_case = ENV['TESTCASE_NAME']
+
+  if  specific_test_case=='all' or specific_test_case.nil?
+    Dir.glob("#{playbook_directory}/.log/verify-roles/info/*.yml").each do |dir|
+      role_info= YAML.load_file(dir)
+      role_directory= role_info["role_path"]
+      host= role_info["ansible_hosts"]
+      ssh_user= role_info["ansible_ssh_user"]
+      role_uuid= role_info["role_uuid"]
+      role_name= role_info["atdd_role_name"]
+      run_role_verify(playbook_directory, role_directory, host, ssh_user, role_name, role_uuid)
+    end
+  end
+end
+
+def run_playbook_testcase(testcase_directory)
+  ansible_tdd = YAML.load_file('ansible_tdd.yml')
+  aws_inventory = YAML.load_file('.log/ansible_tdd_inventory.yml')
+  specific_test_case = ENV['TESTCASE_NAME']
+
+  ansible_tdd["test-cases"].each do |name_test_cases, test_cases|
+    if name_test_cases == specific_test_case or specific_test_case=='all' or specific_test_case.nil?
+      targets = []
+
+      targets_belong_host = {}
+      targets_has_spec = {}
+
+      test_cases.each do |test_case|
+        targets << test_case['spec']+"-"+test_case['host_group']
+        targets_belong_host[test_case['spec']+"-"+test_case['host_group']] = test_case['host_group']
+        targets_has_spec[test_case['spec']+"-"+test_case['host_group']] = test_case['spec']
+      end
+
+      task :all => targets
+      task :default => :all
+
+      targets.each do |test_case_name|
+        aws_inventory[targets_belong_host[test_case_name]].each do |group|
+          ansible_hostname = group["name"]
+          ansible_host = group["ansible_host"]
+          ansible_ssh_user = group["ansible_ssh_user"]
+          spec = targets_has_spec[test_case_name]
+          desc "Run serverspec tests to #{test_case_name}"
+          RSpec::Core::RakeTask.new(test_case_name) do |t|
+            ENV['ATDD_TARGET_HOSTNAME'] = ansible_hostname
+            ENV['ATDD_TARGET_HOST'] = ansible_host
+            ENV['ATDD_TARGET_SSH_USER'] = ansible_ssh_user
+            ENV['TESTCASE_NAME'] = name_test_cases
+            t.pattern = "./tests/ansible-tdd/integration/#{name_test_cases}/spec/#{spec}.rb"
+          end
+        end
+      end
+
+    end
+  end
+end
+
+
+task :spec => 'spec:all'
+task :default => :spec
+
+namespace :spec do
+  # Verify all testcase of roles
+  verify_all_roles(ENV['ATDD_PLAYBOOK_DIRECTORY'])
+
+  # Verify all test case of playbook
+  run_playbook_testcase(ENV['ATDD_PLAYBOOK_DIRECTORY'])
+end
+
+

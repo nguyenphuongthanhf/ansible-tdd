@@ -3,8 +3,8 @@
 - hosts: localhost
   connection: local
   vars:
-    ec2_inventory: "./tdd_ec2_inventory.ini"
-    no_log: True
+    ec2_inventory: "./.log/tdd_ec2_inventory.ini"
+    no_log: false
   pre_tasks:
     - include_vars: "{{ item }}"
       with_first_found:
@@ -35,7 +35,7 @@
         instance_type: '{{ item.instance_type|default("t2.nano") }}'
         image: '{{ item.image|default("ami-2610f246") }}'
         assign_public_ip: '{{ item.assign_public_ip|default("yes") }}'
-        group: '{{ item.group|default([ "alltraffic-from-vpc"]) }}'
+        group: '{{ item.group|default(["alltraffic-from-vpc"]) }}'
         vpc_subnet_id: '{{ item.vpc_subnet_id|default("subnet-8bf53ed2") }}'
         wait: '{{ item.wait|default("yes") }}'
 
@@ -74,6 +74,12 @@
         - tagged_instances
       no_log: "{{no_log}}"
 
+    - name: Fix .ssh/known_hosts.
+      local_action: command  ssh-keygen -f "~/.ssh/known_hosts" -R {{ item.1.public_ip }}
+      with_subelements:
+        - ec2.results
+        - tagged_instances
+
     - name: Log inventory File
       template:
         src: "templates/ec2-inventory.j2"
@@ -82,4 +88,4 @@
     - name: Log inventory File for serverspec
       template:
         src: "templates/ansible_tdd_inventory.j2"
-        dest: "./ansible_tdd_inventory.yml"
+        dest: "./.log/ansible_tdd_inventory.yml"

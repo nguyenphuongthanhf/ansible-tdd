@@ -1,0 +1,31 @@
+---
+
+- hosts: localhost
+  connection: local
+  vars:
+    testcase: ""
+  tasks:
+## INIT EXAMPLE SERVER SPEC TEST CASE
+    - name: Creates test directory
+      file: path="tests/ansible-tdd/integration/{{testcase}}" state=directory recurse=true
+
+    - stat: path="./tests/ansible-tdd/integration/{{testcase}}/setup.yml"
+      register: suite_playbook_default_config
+    - name: Create sample file playbook
+      copy: src="templates/serverspec/template-testcase/setup.yml" dest=./tests/ansible-tdd/integration/{{testcase}}
+      when: not suite_playbook_default_config.stat.exists
+
+    - stat: path="./tests/ansible-tdd/integration/{{testcase}}/teardown.yml"
+      register: suite_playbook_default_config
+    - name: Create sample file playbook
+      copy: src="templates/serverspec/template-testcase/teardown.yml" dest=./tests/ansible-tdd/integration/{{testcase}}
+      when: not suite_playbook_default_config.stat.exists
+
+    - name: Creates test directory
+      file: path=tests/ansible-tdd/integration/{{testcase}}/spec state=directory recurse=true
+
+    - stat: path=./tests/ansible-tdd/integration/{{testcase}}/spec/{{testcase}}_spec.rb
+      register: sample_spec
+    - name: Create sample spec testcase
+      copy: src=templates/serverspec/template-testcase/sample_spec.rb dest="./tests/ansible-tdd/integration/{{testcase}}/spec/{{testcase}}_spec.rb"
+      when: not sample_spec.stat.exists

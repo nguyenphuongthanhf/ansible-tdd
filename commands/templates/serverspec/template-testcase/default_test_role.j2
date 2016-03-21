@@ -1,0 +1,6 @@
+---
+
+- hosts: {{ ROLE_DIRECTORY }}
+  become: yes
+  roles:
+    - {role: ../../{{ ROLE_DIRECTORY }} }

@@ -1,7 +1,0 @@
----
-#ansible playbook prepare mockup test
-
-- hosts: localhost
-  connection: local
-  tasks:
-    - debug: msg="#ansible playbook prepare mockup test"

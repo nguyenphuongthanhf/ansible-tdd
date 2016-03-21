@@ -4,22 +4,25 @@ provision:
     - server_group: redis
       num_instances: 1
       region: 'us-west-2'
-      key_name: 'thanhnp'
+      key_name: 'xxxx'
       instance_tags: {}
       ansible_ssh_user: "centos"
       ansible_port: 22
-#    - server_group: cached
-#      num_instances: 2
-#      region: 'us-west-2'
-#      key_name: 'thanhnp'
-#      ansible_ssh_user: "centos"
-#      ansible_port: 22
+    - server_group: web-server
+      num_instances: 2
+      region: 'us-west-2'
+      key_name: 'xxxx'
+      ansible_ssh_user: "centos"
+      ansible_port: 22
+    - server_group: statistic-server
+      num_instances: 2
+      region: 'us-west-2'
+      key_name: 'xxxx'
+      ansible_ssh_user: "centos"
+      ansible_port: 22
 test-cases:
   sample-testcases:
-    - spec: sample_spec
-      host_group: redis
-#    - spec: webserver_spec
-#      host_group: redis
-
-  
-  
+    - spec: web-server-connect-redis
+      host_group: web-server
+    - spec: statistic-server-connect-redis
+      host_group: statistic-server

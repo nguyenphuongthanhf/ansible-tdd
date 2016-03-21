@@ -1,0 +1,9 @@
+---
+#ansible playbook prepare mockup test
+
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "{{lookup('env','ATDD_SETUP_MOCKUP_VARS')}}"
+  tasks:
+    - debug: var=locahost1
