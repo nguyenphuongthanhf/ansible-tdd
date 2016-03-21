@@ -300,7 +300,60 @@ test-cases:
     - spec: {xxx-testcase-name}_spec
       host_group: cache
 ```
+### Memcached client
+#### Memcached client resource type.
+its(:stdout), its(:stderr), its(:exit_status)
+You can get the stdout, stderr and exit status of the command result, and can use any matchers RSpec supports.
 
+https://github.com/jorisroovers/memclient
+
+```ruby
+
+context memcached('-h="localhost" -p="11211"  + ' set foo bar') do
+  its (:stdout) { should match /OK/ }
+end
+
+context memcached('-h="localhost" -p="11211" get foo') do
+  its (:stdout) { should match value }
+end
+
+```
+
+### Redis client
+
+#### Redis client resource type.
+its(:stdout), its(:stderr), its(:exit_status)
+You can get the stdout, stderr and exit status of the command result, and can use any matchers RSpec supports.
+
+http://github.com/antirez/redis.git
+
+```ruby
+
+context redis('-h cache1.internal -p 3679   + ' set foo bar') do
+  its (:stdout) { should match /OK/ }
+end
+
+context redis('-h cache1.internal -p 3679 get foo') do
+  its (:stdout) { should match value }
+end
+
+```
+
+
+## Beanstalk cliend
+#### Memcached client resource type.
+its(:stdout), its(:stderr), its(:exit_status)
+You can get the stdout, stderr and exit status of the command result, and can use any matchers RSpec supports.
+
+https://github.com/src-d/beanstool
+```ruby
+
+context beanstalk('stats') do
+  its (:stdout) { should match /OK/ }
+end
+
+
+```
 
 ## Notes
 
