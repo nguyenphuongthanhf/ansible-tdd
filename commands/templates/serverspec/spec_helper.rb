@@ -5,6 +5,7 @@ require 'json'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddmemcache.rb'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddredis.rb'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddbeanstool.rb'
+require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddmysql.rb'
 
 set :backend, :ssh
 set :request_pty, true

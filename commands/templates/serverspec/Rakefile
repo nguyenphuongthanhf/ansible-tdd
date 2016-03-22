@@ -55,7 +55,7 @@ def run_playbook_testcase(testcase_directory)
   ansible_tdd["test-cases"].each do |name_test_cases, test_cases|
     if name_test_cases == specific_test_case or specific_test_case=='all' or specific_test_case.nil?
       targets = []
-
+  puts "#{name_test_cases}"
       targets_belong_host = {}
       targets_has_spec = {}
 

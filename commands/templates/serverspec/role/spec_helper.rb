@@ -4,7 +4,7 @@ require 'json'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddmemcache.rb'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddredis.rb'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddbeanstool.rb'
-
+require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddmysql.rb'
 
 file = File.read(ENV['ATDD_EXTRA_VARS_VERIFY_ROLES_JSON'])
 properties = JSON.parse(file)

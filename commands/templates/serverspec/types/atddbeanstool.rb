@@ -18,7 +18,7 @@ module Serverspec::Type
     end
 
   end
-  def beanstalk(paths)
+  def beanstalkd(paths)
     ATDDBeanstalk.new(paths)
   end
 end

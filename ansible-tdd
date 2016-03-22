@@ -124,10 +124,6 @@ usage () {
   echo "        Run all"
   echo "        atdd verify"
   echo "        atdd verify all"
-  echo "    invoke_verify_role: auto verify when install a role"
-  echo "    EX:"
-  echo "        Run a testcase"
-  echo "        atdd invoke_verify_role {role_name} {role_path} {external_vars_yml} "
   tput sgr0  # reset text color
   exit 1
 }
@@ -192,6 +188,11 @@ do_verify(){
     prepare_test_tools
 
     export ATDD_PLAYBOOK_DIRECTORY="${CURRENT_PATH}"
+    if [ ! -z "${config}" ]
+    then
+         export TESTCASE_NAME="#{config}"
+    fi
+
     rake  -f $EXECUTING_BASH_PATH/commands/templates/serverspec/Rakefile spec
 
     clear_test_tools
