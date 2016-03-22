@@ -190,7 +190,7 @@ do_verify(){
     export ATDD_PLAYBOOK_DIRECTORY="${CURRENT_PATH}"
     if [ ! -z "${config}" ]
     then
-         export TESTCASE_NAME="#{config}"
+         export TESTCASE_NAME="${config}"
     fi
 
     rake  -f $EXECUTING_BASH_PATH/commands/templates/serverspec/Rakefile spec

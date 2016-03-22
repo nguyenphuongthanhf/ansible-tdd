@@ -5,7 +5,7 @@
     - name: Prepare folder store test tools
       become: yes
       file: path=/ansible-tdd state=directory recurse=true mode=0755
-    - name: copy memcached cli
+    - name: copy testtools
       become: yes
       copy: src=templates/test-tools/test-tools.tar dest=/ansible-tdd  mode=0755
     - name: unarchive
