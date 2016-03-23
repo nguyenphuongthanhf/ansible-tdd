@@ -95,6 +95,9 @@ end
 
 
 RSpec.configure do |config|
+  config.tty = true
+  config.color = true
+
   config.before(:all) do
     setupByAnsible()
   end
