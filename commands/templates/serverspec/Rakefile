@@ -3,8 +3,8 @@ require 'rspec/core/rake_task'
 require 'yaml'
 
 
-def run_role_verify(playbook_directory, role_directory, host, ssh_user, role_name, role_uuid)
-  external_vars="#{playbook_directory}/.log/verify-roles/data/#{role_uuid}.json"
+def run_role_verify(data_file, playbook_directory, role_directory, host, ssh_user, role_name, role_uuid)
+  external_vars="#{playbook_directory}/.log/verify-roles/data/#{data_file}"
 
   targets = []
   Dir.glob("#{role_directory}/tests/ansible-tdd/integration/*").each do |dir|
@@ -42,7 +42,8 @@ def verify_all_roles(playbook_directory)
       ssh_user= role_info["ansible_ssh_user"]
       role_uuid= role_info["role_uuid"]
       role_name= role_info["atdd_role_name"]
-      run_role_verify(playbook_directory, role_directory, host, ssh_user, role_name, role_uuid)
+      data_file=File.basename(dir)
+      run_role_verify(data_file, playbook_directory, role_directory, host, ssh_user, role_name, role_uuid)
     end
   end
 end
@@ -53,10 +54,8 @@ def run_playbook_testcase(testcase_directory)
   specific_test_case = ENV['TESTCASE_NAME']
 
   ansible_tdd["test-cases"].each do |name_test_cases, test_cases|
-    puts "aaaaaaaaaa #{name_test_cases} == #{specific_test_case}"
     if name_test_cases == specific_test_case or specific_test_case=='all' or specific_test_case.nil?
       targets = []
-      puts "#{name_test_cases}"
       targets_belong_host = {}
       targets_has_spec = {}
 

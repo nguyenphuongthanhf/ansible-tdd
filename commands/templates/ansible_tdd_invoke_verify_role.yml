@@ -18,9 +18,9 @@
   connection: local
   template:
     src: "{{lookup('env','ATDD_SOURCE_DIRECTORY')}}/commands/templates/verify_role_info.j2"
-    dest: "{{playbook_dir}}/.log/verify-roles/info/{{role_uuid}}.yml"
+    dest: "{{playbook_dir}}/.log/verify-roles/info/{{role_uuid}}-{{inventory_hostname}}"
 
 - name: generate all ansible vars for role {{atdd_role_name}}
-  copy: content="{{export_vars |to_nice_json}}" dest={{playbook_dir}}/.log/verify-roles/data/{{role_uuid}}.json
+  copy: content="{{export_vars |to_nice_json}}" dest={{playbook_dir}}/.log/verify-roles/data/{{role_uuid}}-{{inventory_hostname}}
   become: no
   connection: local

@@ -22,6 +22,11 @@ if File.exist?(mockup_vars_path)
   ansible_global_vars['mockup'] = YAML.load_file(mockup_vars_path)
 end
 
+host_info="#{playbook_directory}/.log/ansible_tdd_inventory.yml"
+if File.exist?(host_info)
+  ansible_global_vars['hosts'] =YAML.load_file(host_info)
+end
+
 set_property ansible_global_vars
 
 if ENV['ASK_SUDO_PASSWORD']
@@ -87,3 +92,15 @@ def teardownByAnsilbe()
   ENV['ATDD_PLAYBOOK_DIRECTORY']=""
   ENV['ATDD_SETUP_MOCKUP_VARS']=""
 end
+
+
+RSpec.configure do |config|
+  config.before(:all) do
+    setupByAnsible()
+  end
+
+  config.after(:all) do
+    teardownByAnsilbe()
+  end
+end
+

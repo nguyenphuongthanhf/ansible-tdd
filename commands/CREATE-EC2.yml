@@ -68,7 +68,7 @@
       no_log: "{{no_log}}"
 
     - name: Add new instance to host group
-      add_host: name="{{item.0.item.server_group}}-{{item.1.id}}" hostname="{{ item.1.public_ip }}" groupname="{{item.0.item.server_group}}" ansible_ssh_user="{{ item.0.item.ansible_ssh_user }}" ansible_port="{{ item.0.item.ansible_port }}" instances_id="{{item.1.id}}"
+      add_host: name="{{item.0.item.server_group}}-{{item.1.id}}" hostname="{{ item.1.public_ip }}" groupname="{{item.0.item.server_group}}" ansible_ssh_user="{{ item.0.item.ansible_ssh_user }}" ansible_port="{{ item.0.item.ansible_port }}" instances_id="{{item.1.id}}" public_ip="{{ item.1.public_ip }}" aws_region={{item.1.region}} private_ip={{item.1.private_ip}}
       with_subelements:
         - ec2.results
         - tagged_instances

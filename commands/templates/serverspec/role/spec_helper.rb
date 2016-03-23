@@ -1,13 +1,21 @@
 require 'serverspec'
 require 'net/ssh'
 require 'json'
+require 'yaml'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddmemcache.rb'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddredis.rb'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddbeanstool.rb'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddmysql.rb'
 
+playbook_directory= ENV['ATDD_PLAYBOOK_DIRECTORY']
+
 file = File.read(ENV['ATDD_EXTRA_VARS_VERIFY_ROLES_JSON'])
 properties = JSON.parse(file)
+
+host_info="#{playbook_directory}/.log/ansible_tdd_inventory.yml"
+if File.exist?(host_info)
+  properties['hosts'] =YAML.load_file(host_info)
+end
 
 set_property properties
 

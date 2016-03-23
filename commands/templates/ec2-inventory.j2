@@ -1,10 +1,12 @@
 {% set index = 1 %}
-{% for ec2_info in ec2.results %}
-[{{ec2_info.item.server_group}}]
-{% for ec2_instance in ec2_info.tagged_instances %}
-{{ec2_info.item.server_group}}{{index}} ansible_host={{ec2_instance.public_ip}} ansible_ssh_user={{ec2_info.item.ansible_ssh_user}} ansible_port={{ec2_info.item.ansible_port}} instance_id={{ec2_instance.id}} aws_region={{ec2_info.item.region}} private_ip={{ec2_instance.private_ip}} internal_hostname={{ec2_info.item.server_group}}{{index}}.internal
+{% for group_name, hosts in groups.iteritems() %}
+{%- if (group_name !='ungrouped') and (group_name !='all') -%}
+[{{group_name}}]
+{% for  host_name in hosts %}
+{{group_name}}{{index}} ansible_host={{hostvars[host_name]["public_ip"]}} ansible_ssh_user={{hostvars[host_name]["ansible_ssh_user"]}} ansible_port={{hostvars[host_name]["ansible_port"]}} instance_id={{hostvars[host_name]["instances_id"]}} aws_region={{hostvars[host_name]["aws_region"]}} private_ip={{hostvars[host_name]["private_ip"]}} internal_hostname={{group_name}}{{index}}.internal
 {% set index = index + 1 %}
 {% endfor %}
+{%- endif %}
 {% endfor %}
 
 
