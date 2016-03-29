@@ -17,4 +17,4 @@
         region: "{{ aws_region }}"
         instance_ids: "{{ instance_ids.split(',') }}"
         state: absent
-        wait: True
+        wait: False

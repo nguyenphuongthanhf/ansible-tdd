@@ -33,7 +33,7 @@
     #more than usage
         
         instance_type: '{{ item.instance_type|default("t2.nano") }}'
-        image: '{{ item.image|default("ami-2610f246") }}'
+        image: '{{ item.image|default("ami-ff44af9f") }}'
         assign_public_ip: '{{ item.assign_public_ip|default("yes") }}'
         group: '{{ item.group|default(["anphabe-hq", "alltraffic-from-vpc"]) }}'
         vpc_subnet_id: '{{ item.vpc_subnet_id|default("subnet-8bf53ed2") }}'

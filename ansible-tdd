@@ -12,6 +12,7 @@ CURRENT_PATH="`pwd`"
 STDERR_OUTPUT_VIEWER="$CURRENT_PATH/serverspec_stderr_VIEWER"
 STDERR_OUTPUT="$CURRENT_PATH/serverspec_stderr"
 STDOUT_OUTPUT="$CURRENT_PATH/serverspec_stdout"
+export BASENAME_PLAYBOOK_DIRECTORY="${CURRENT_PATH}"
 export ATDD_SOURCE_DIRECTORY="${EXECUTING_BASH_PATH}"
 export ATDD_INVOKE_VERIFY_ROLE="${EXECUTING_BASH_PATH}"/commands/templates/ansible_tdd_invoke_verify_role.yml
 export ATDD_SETUP_MOCKUP="${EXECUTING_BASH_PATH}"/commands/templates/setup-mockup.yml
@@ -188,6 +189,7 @@ do_verify(){
     prepare_test_tools
 
     export ATDD_PLAYBOOK_DIRECTORY="${CURRENT_PATH}"
+
     if [ ! -z "${config}" ]
     then
          export TESTCASE_NAME="${config}"

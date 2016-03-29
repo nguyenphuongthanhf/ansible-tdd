@@ -6,21 +6,21 @@
 - name: Creates test directory
   become: no
   connection: local
-  file: path={{playbook_dir}}/.log/verify-roles/info state=directory recurse=true
+  file: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/verify-roles/info state=directory recurse=true
 
 - name: Creates test directory
   become: no
   connection: local
-  file: path={{playbook_dir}}/.log/verify-roles/data state=directory recurse=true
+  file: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/verify-roles/data state=directory recurse=true
 
 - name: Log info role
   become: no
   connection: local
   template:
-    src: "{{lookup('env','ATDD_SOURCE_DIRECTORY')}}/commands/templates/verify_role_info.j2"
-    dest: "{{playbook_dir}}/.log/verify-roles/info/{{role_uuid}}-{{inventory_hostname}}"
+    src: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/commands/templates/verify_role_info.j2"
+    dest: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/verify-roles/info/{{role_uuid}}-{{inventory_hostname}}"
 
 - name: generate all ansible vars for role {{atdd_role_name}}
-  copy: content="{{export_vars |to_nice_json}}" dest={{playbook_dir}}/.log/verify-roles/data/{{role_uuid}}-{{inventory_hostname}}
+  copy: content="{{export_vars |to_nice_json}}" dest={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/verify-roles/data/{{role_uuid}}-{{inventory_hostname}}
   become: no
   connection: local
