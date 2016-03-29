@@ -58,3 +58,11 @@
         src: "templates/serverspec/template-testcase/default_test_role.j2"
         dest: ./tests/default.yml
       when: not role_test.stat.exists
+
+    - stat: path=~/.ssh/config
+      register: ssh_know_hosts
+    - name:  fix ssh know host
+      template:
+        src: "templates/config_ssh.j2"
+        dest: ~/.ssh/config
+      when: not ssh_know_hosts.stat.exists

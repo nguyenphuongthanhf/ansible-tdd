@@ -17,7 +17,7 @@
   become: no
   connection: local
   template:
-    src: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/commands/templates/verify_role_info.j2"
+    src: "{{lookup('env','ATDD_SOURCE_DIRECTORY')}}/commands/templates/verify_role_info.j2"
     dest: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/verify-roles/info/{{role_uuid}}-{{inventory_hostname}}"
 
 - name: generate all ansible vars for role {{atdd_role_name}}

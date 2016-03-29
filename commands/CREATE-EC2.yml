@@ -68,17 +68,11 @@
       no_log: "{{no_log}}"
 
     - name: Add new instance to host group
-      add_host: name="{{item.0.item.server_group}}-{{item.1.id}}" hostname="{{ item.1.public_ip }}" groupname="{{item.0.item.server_group}}" ansible_ssh_user="{{ item.0.item.ansible_ssh_user }}" ansible_port="{{ item.0.item.ansible_port }}" instances_id="{{item.1.id}}" public_ip="{{ item.1.public_ip }}" aws_region={{item.1.region}} private_ip={{item.1.private_ip}}
+      add_host: name="{{item.0.item.server_group}}-{{item.1.id}}" hostname="{{ item.1.public_ip }}" groupname="{{item.0.item.server_group}}" ansible_ssh_user="{{ item.0.item.ansible_ssh_user }}" ansible_port="{{ item.0.item.ansible_port }}" instances_id="{{item.1.id}}" public_ip="{{ item.1.public_ip }}" aws_region={{item.1.region}} private_ip={{item.1.private_ip}} ansible_ssh_private_key_file={{ansible_ssh_private_key_file|default("")}}
       with_subelements:
         - ec2.results
         - tagged_instances
       no_log: "{{no_log}}"
-
-    - name: Fix .ssh/known_hosts.
-      local_action: command  ssh-keygen -f "~/.ssh/known_hosts" -R {{ item.1.public_ip }}
-      with_subelements:
-        - ec2.results
-        - tagged_instances
 
     - name: Log inventory File
       template:

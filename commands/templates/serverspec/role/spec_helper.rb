@@ -38,6 +38,9 @@ host = ENV['ATDD_ANSIBLE_HOSTNAME']
 options = Net::SSH::Config.for(host)
 
 options[:user] = ENV['ATDD_ANSIBLE_SSH_USER']
+if ENV['SSH_CUSTOM_KEY']
+  options[:keys] = ENV['SSH_CUSTOM_KEY']
+end
 
 set :host,        options[:host_name] || host
 set :ssh_options, options

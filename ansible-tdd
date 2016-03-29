@@ -172,7 +172,13 @@ login_to_instance (){
 
     if [ ! -z "${ansible_ssh_user}" ] && [ ! -z "${ansible_host}" ] && [ ! -z "${ansible_port}" ]
     then
-        ssh $ansible_ssh_user@$ansible_host -p $ansible_port
+        custom_ssh_private_key_file=''
+
+        if [ ! -z "${ansible_ssh_private_key_file}" ]
+        then
+            custom_ssh_private_key_file="-i ${ansible_ssh_private_key_file}"
+        fi
+        ssh $ansible_ssh_user@$ansible_host -p $ansible_port $custom_ssh_private_key_file -vvv
     fi
 
 }
