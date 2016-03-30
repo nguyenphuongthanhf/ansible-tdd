@@ -6,6 +6,7 @@ require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddm
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddredis.rb'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddbeanstool.rb'
 require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddmysql.rb'
+require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddmongod.rb'
 
 set :backend, :ssh
 set :request_pty, true
