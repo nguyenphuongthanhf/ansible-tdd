@@ -104,7 +104,7 @@ def run_playbook_testcase(testcase_directory)
 
 end
 
-
+def start_
 task :spec => 'spec:all'
 task :default => :spec
 
