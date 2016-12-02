@@ -11,9 +11,6 @@ echo "alias ansible-tdd='$CURRENT_PATH/ansible-tdd'" | tee -a ~/.bashrc
 echo "alias atdd='$CURRENT_PATH/ansible-tdd'" | tee -a ~/.bashrc
 
 
-sudo pip install boto
-
-sudo gem install serverspec
 
 
 
