@@ -1,0 +1,64 @@
+---
+
+- hosts: localhost
+  connection: local
+  vars:
+    no_log: false
+  pre_tasks:
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "{{tdd_provisioning}}"
+    - include_vars: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/real-instance-name.yml"
+    - include_vars: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/skeleton-instance-name.yml"
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "templates/ec2_secret_access.yml"
+    - include_vars: "{{ item }}"
+      with_first_found:
+        - "{{vault_ec2_secret_access}}"
+  tasks:
+    - set_fact:
+        ec2_inventory: "./.log/{{provision.app_name}}/tdd_ec2_inventory.ini"
+    - name: different-skeleton-instance-name
+      template:
+        src: "templates/rename-instances/different-skeleton-instance-name.j2"
+        dest: "./.log/{{provision.app_name}}/skeleton-instance-name.yml"
+
+    - name: different-real-instance-name
+      template:
+        src: "templates/rename-instances/different-real-instance-name.j2"
+        dest: "./.log/{{provision.app_name}}/real-instance-name.yml"
+
+    - name: update value for real_instance_name variable
+      include_vars: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/real-instance-name.yml"
+    - name: update value for skeleton_instance_name variable
+      include_vars: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/skeleton-instance-name.yml"
+
+    - name: Generate must-rename-instance-name
+      template:
+        src: "templates/rename-instances/must-rename-instance-name.j2"
+        dest: "./.log/{{provision.app_name}}/must-rename-instance-name.yml"
+    - include_vars: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/must-rename-instance-name.yml"
+
+    - file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/real-instance-name.yml" state=absent
+    - file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/skeleton-instance-name.yml" state=absent
+    - file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/must-rename-instance-name.yml" state=absent
+
+    - set_fact: must_rename_instance_name="{{{}}}"
+      when: must_rename_instance_name is none
+
+    - name: retag the instance name
+      ec2_tag:
+        aws_access_key: '{{aws_access_key_id }}'
+        aws_secret_key: '{{ aws_secret_access_key }}'
+        region: "{{aws_region}}"
+        resource: "{{item.value}}"
+        state: present
+        tags:
+          "Name": "{{item.key}}"
+      with_dict: "{{must_rename_instance_name| combine({})}}"
+
+
+
+
+

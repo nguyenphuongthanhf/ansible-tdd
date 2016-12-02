@@ -11,10 +11,10 @@
       copy: content="All temporary files when ansible tdd run, it will generate at here" dest=./.log/README.markdown
       when: not readme_markdown.stat.exists
 
-    - stat: path=./ansible_tdd.yml
+    - stat: path="./{{lookup('env','ATDD_PROJECT_CONFIG')}}"
       register: ansible_tdd_config
     - name: Create Provisioning template
-      copy: src=templates/ansible_tdd.yml dest=./ansible_tdd.yml
+      copy: src=templates/ansible_tdd.yml dest="./{{lookup('env','ATDD_PROJECT_CONFIG')}}"
       when: not ansible_tdd_config.stat.exists
 
     - stat: path=./.rspec

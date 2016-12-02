@@ -1,0 +1,155 @@
+require 'rake'
+require 'rspec/core/rake_task'
+require 'yaml'
+
+
+def run_role_verify(data_file, playbook_directory, role_directory, host, ssh_user, role_name, role_uuid, ssh_custom_key)
+  app_name = ENV['APP_NAME']
+  external_vars="#{playbook_directory}/.log/#{app_name}/verify-roles/data/#{data_file}"
+
+  targets = []
+  if !Dir.glob("#{role_directory}/tests/ansible-tdd/integration/*").nil?
+    Dir.glob("#{role_directory}/tests/ansible-tdd/integration/*").each do |dir|
+      next unless File.directory?(dir)
+      target = File.basename(dir)
+      target = "_#{target}" if target == "default"
+      targets << target
+    end
+    tasks = {}
+    targets.each do |target|
+      info={}
+
+      info.merge!({"SSH_CUSTOM_KEY"=>ssh_custom_key})
+      info.merge!({"EXTRA_VARS"=>external_vars})
+      info.merge!({"TARGET_HOST"=>host})
+      info.merge!({"SSH_USER"=>ssh_user})
+      info.merge!({"TESTCASE_DIRECTORY"=>role_directory})
+      tasks.merge!({"#{target}-#{role_name}-#{host}-#{role_uuid}" => info})
+    end
+    return tasks
+  end
+
+
+end
+
+def verify_all_roles(playbook_directory)
+  specific_test_case = ENV['TESTCASE_NAME']
+  app_name = ENV['APP_NAME']
+  tasks={}
+
+  if specific_test_case=='all' or specific_test_case.nil?
+    Dir.glob("#{playbook_directory}/.log/#{app_name}/verify-roles/info/*").each do |dir|
+      role_info= YAML.load_file(dir)
+      role_directory= role_info["role_path"]
+      host= role_info["ansible_hosts"]
+      ssh_user= role_info["ansible_ssh_user"]
+      role_uuid= role_info["role_uuid"]
+      role_name= role_info["atdd_role_name"]
+      ssh_custom_key= role_info["ansible_ssh_private_key_file"]
+      data_file=File.basename(dir)
+      info = run_role_verify(data_file, playbook_directory, role_directory, host, ssh_user, role_name, role_uuid, ssh_custom_key)
+      tasks.merge!(info)
+    end
+  end
+
+  return tasks
+end
+
+def run_playbook_testcase(testcase_directory)
+  app_name = ENV['APP_NAME']
+  ansible_tdd = YAML.load_file(testcase_directory+'/tests/testcases.yml')
+  aws_inventory = YAML.load_file(testcase_directory+"/.log/#{app_name}/ansible_tdd_inventory.yml")
+  specific_test_case = ENV['TESTCASE_NAME']
+
+  tasks={}
+
+  if !ansible_tdd.nil? && !ansible_tdd.empty?
+    ansible_tdd.each do |name_test_cases, test_cases|
+      if name_test_cases == specific_test_case or specific_test_case=='all' or specific_test_case.nil?
+        targets = []
+        targets_belong_host = {}
+        targets_has_spec = {}
+
+        test_cases.each do |test_case|
+          targets << test_case['spec']+"-"+test_case['host_group']
+          targets_belong_host[test_case['spec']+"-"+test_case['host_group']] = test_case['host_group']
+          targets_has_spec[test_case['spec']+"-"+test_case['host_group']] = test_case['spec']
+        end
+
+        targets.each do |test_case_name|
+          next if aws_inventory[targets_belong_host[test_case_name]].nil?
+
+          aws_inventory[targets_belong_host[test_case_name]].each do |group|
+            info={}
+            info.merge!({"SSH_CUSTOM_KEY"=>group["ansible_ssh_private_key_file"]})
+            info.merge!({"TESTCASE_DIRECTORY"=>testcase_directory})
+            info.merge!({"TARGET_HOST"=>group["ansible_host"]})
+            info.merge!({"SSH_USER"=>group["ansible_ssh_user"]})
+            info.merge!({"TESTCASE"=> name_test_cases})
+            tasks.merge!({test_case_name+'-'+ group["name"]=> info})
+          end
+        end
+      end
+    end
+
+    return tasks
+  end
+
+end
+
+def start_test(tasks)
+  task :all => tasks.keys
+  task :default => :all
+
+  tasks.each do |test_case_name, test_case_infos|
+    RSpec::Core::RakeTask.new(test_case_name.to_sym) do |t|
+
+      if !test_case_infos["SSH_CUSTOM_KEY"].nil?
+        ENV['SSH_CUSTOM_KEY'] = test_case_infos["SSH_CUSTOM_KEY"]
+      end
+
+      ENV["ATDD_TESTCASE_DIRECTORY"]= test_case_infos["TESTCASE_DIRECTORY"]
+
+      if !test_case_infos["EXTRA_VARS"].nil?
+        ENV['ATDD_EXTRA_VARS_VERIFY_ROLES_JSON'] = test_case_infos["EXTRA_VARS"]
+      end
+
+      ENV["ATDD_TARGET_HOST"]= test_case_infos["TARGET_HOST"]
+
+      ENV["ATDD_ANSIBLE_SSH_USER"]= test_case_infos["SSH_USER"]
+
+      testcase="*"
+      if !test_case_infos["TESTCASE"].nil? && !test_case_infos["TESTCASE"].empty?
+        ENV["TESTCASE_NAME"]= test_case_infos["TESTCASE"]
+        testcase=test_case_infos["TESTCASE"]
+      end
+
+      t.pattern = test_case_infos["TESTCASE_DIRECTORY"]+"/tests/ansible-tdd/integration/#{testcase}/spec/*_spec.rb"
+
+      if !ENV["TURN_OFF_FAIL_ON_ERROR"].nil?
+        t.fail_on_error = false
+      end
+
+    end
+  end
+
+end
+
+task :spec => 'spec:all'
+task :default => :spec
+
+namespace :spec do
+
+  tasks= {}
+  # Verify all testcase of roles
+  roles_tasks=verify_all_roles(ENV['ATDD_PLAYBOOK_DIRECTORY'])
+  tasks.merge!(roles_tasks)
+
+  # Verify all test case of playbook
+  playbook_tasks=run_playbook_testcase(ENV['ATDD_PLAYBOOK_DIRECTORY'])
+  tasks.merge!(playbook_tasks)
+
+  start_test(tasks)
+end
+
+

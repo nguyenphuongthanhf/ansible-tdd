@@ -10,11 +10,11 @@ require ENV['ATDD_SOURCE_DIRECTORY']+'/commands/templates/serverspec/types/atddm
 
 
 playbook_directory= ENV['ATDD_PLAYBOOK_DIRECTORY']
-
+app_name = ENV['APP_NAME']
 file = File.read(ENV['ATDD_EXTRA_VARS_VERIFY_ROLES_JSON'])
 properties = JSON.parse(file)
 
-host_info="#{playbook_directory}/.log/ansible_tdd_inventory.yml"
+host_info="#{playbook_directory}/.log/#{app_name}/ansible_tdd_inventory.yml"
 if File.exist?(host_info)
   properties['hosts'] =YAML.load_file(host_info)
 end
@@ -35,7 +35,7 @@ else
   set :sudo_password, ENV['SUDO_PASSWORD']
 end
 
-host = ENV['ATDD_ANSIBLE_HOSTNAME']
+host = ENV['ATDD_TARGET_HOST']
 
 options = Net::SSH::Config.for(host)
 

@@ -1,0 +1,8 @@
+must_rename_instance_name:
+{% for  group_name, real_names in real_instance_name.iteritems() %}
+{% if (real_names is not none) %}
+{% for  real_name in real_names %}
+    {{skeleton_instance_name[group_name][loop.index0]}}: {{real_name}}
+{% endfor %}
+{% endif %}
+{% endfor %}

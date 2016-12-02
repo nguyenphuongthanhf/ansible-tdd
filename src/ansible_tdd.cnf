@@ -1,0 +1,6 @@
+# Run a series of testcases, continuing even if some fail
+VERIFY_TURN_OFF_FAIL_ON_ERROR=false
+# Turn off auto upload testtool to tartget
+MANUAL_PREPARE_TEST_TOOL=false
+# Project config file name
+ATDD_PROJECT_CONFIG=provision.yml

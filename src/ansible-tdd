@@ -6,9 +6,17 @@
 # as in the --default example).
 # note: if this is set to > 0 the /etc/hosts part is not recognized ( may be a bug )
 
-#EXECUTING_BASH_PATH="`dirname \"$0\"`"
 EXECUTING_BASH_PATH="$(dirname "$(readlink -f "$0")")"
 CURRENT_PATH="`pwd`"
+
+
+source $EXECUTING_BASH_PATH/ansible_tdd.cnf  # extract config
+export ATDD_PROJECT_CONFIG=$ATDD_PROJECT_CONFIG
+if [ ! -z "${VERIFY_TURN_OFF_FAIL_ON_ERROR}" ]
+then
+   export TURN_OFF_FAIL_ON_ERROR=$VERIFY_TURN_OFF_FAIL_ON_ERROR
+fi
+
 STDERR_OUTPUT_VIEWER="$CURRENT_PATH/serverspec_stderr_VIEWER"
 STDERR_OUTPUT="$CURRENT_PATH/serverspec_stderr"
 STDOUT_OUTPUT="$CURRENT_PATH/serverspec_stdout"
@@ -21,11 +29,13 @@ export ATDD_ROLE_SPEC_HELPER="${EXECUTING_BASH_PATH}/commands/templates/serversp
 export ATDD_PLAYBOOK_SPEC_HELPER="${EXECUTING_BASH_PATH}/commands/templates/serverspec/spec_helper.rb"
 
 command=$1
-config=$2
-opt=$3
+app_name=$2
+config=$3
+opt=$4
 
 server_do_action(){
-    ACTION=$1
+    APP_NAME=$1
+    ACTION=$2
 
     first_read='first_read'
        while IFS='= '
@@ -71,11 +81,11 @@ server_do_action(){
                     tput setaf 2 # change text to green color
                     echo_info "$ACTION ALL SERVERS: ${instance_ids} at region: $aws_region"
                     tput sgr0  # reset text color
-                    ansible-playbook -i $CURRENT_PATH/.log/tdd_ec2_inventory.ini $EXECUTING_BASH_PATH/commands/$ACTION-EC2.yml  --extra-vars "aws_region=$aws_region instance_ids=$instance_ids vault_ec2_secret_access=$CURRENT_PATH/vault_ec2_secret_access.yml"   --vault-password-file  ./.vault_pass.txt
+                    ansible-playbook -i $CURRENT_PATH/.log/$APP_NAME/tdd_ec2_inventory.ini $EXECUTING_BASH_PATH/commands/$ACTION-EC2.yml  --extra-vars "app_name=$APP_NAME aws_region=$aws_region instance_ids=$instance_ids vault_ec2_secret_access=$CURRENT_PATH/vault_ec2_secret_access.yml"   --vault-password-file  ./.vault_pass.txt
                 fi
             fi
 
-        done < $CURRENT_PATH/.log/tdd_ec2_inventory.ini
+        done < $CURRENT_PATH/.log/$APP_NAME/tdd_ec2_inventory.ini
 }
 
 echo_info(){
@@ -99,12 +109,13 @@ echo_warning(){
 
 usage () {
     tput setaf 2 # change text to green color
-  echo "Usage: ansible-tdd COMMAND CONFIG"
+  echo "Usage: ansible-tdd COMMAND APP_NAME CONFIG"
   echo "Commands:"
   echo "    init:       Generate scaffolding for ansible-tdd"
   echo "    generate-role-testcase:       Generate scaffolding for role testcase"
   echo "    generate-playbook-testcase:       Generate scaffolding for playbook"
   echo "    create:     Create list aw2 instances belong file provisioning"
+  echo "    update-inventory:     update info list aw2 instances belong file provisioning"
   echo "    start:      Start/initialize a container"
   echo "    stop:       Stop a running container"
   echo "    destroy:    Stop and remove all aw2 instances"
@@ -114,41 +125,47 @@ usage () {
   echo "    clear-test-tools: remove all test tools to all server"
   echo "    test:       Run CONVERGE and verify by serverspec"
   echo "    EX:"
-  echo "        atdd test playbook.yml"
+  echo "        atdd app_name test playbook.yml"
   echo "    converge:   Bootstrap a container for the config based on a template"
   echo "    EX:"
-  echo "        atdd converge playbook.yml"
+  echo "        atdd app_name converge playbook.yml"
   echo "    verify:     Only run serverspec verify server"
   echo "    EX:"
   echo "        Run a testcase"
-  echo "        atdd verify TEST-CASE-NAME "
+  echo "        atdd verify app_name TEST-CASE-NAME "
   echo "        Run all"
-  echo "        atdd verify"
-  echo "        atdd verify all"
+  echo "        atdd verify app_name"
+  echo "        atdd verify app_name all"
   tput sgr0  # reset text color
   exit 1
 }
 
+
+ec2_update_inventory(){
+   ansible-playbook $EXECUTING_BASH_PATH/commands/UPDATE_AWS_INVENTORY.yml --extra-vars "tdd_provisioning=$CURRENT_PATH/$ATDD_PROJECT_CONFIG  vault_ec2_secret_access=$CURRENT_PATH/vault_ec2_secret_access.yml"  --vault-password-file   ./.vault_pass.txt
+}
+
 ec2_create(){
-   ansible-playbook $EXECUTING_BASH_PATH/commands/CREATE-EC2.yml --extra-vars "tdd_provisioning=$CURRENT_PATH/ansible_tdd.yml  vault_ec2_secret_access=$CURRENT_PATH/vault_ec2_secret_access.yml"  --vault-password-file   ./.vault_pass.txt
+   ansible-playbook $EXECUTING_BASH_PATH/commands/CREATE-EC2.yml --extra-vars "tdd_provisioning=$CURRENT_PATH/$ATDD_PROJECT_CONFIG  vault_ec2_secret_access=$CURRENT_PATH/vault_ec2_secret_access.yml"  --vault-password-file   ./.vault_pass.txt
+}
+
+ec2_rename_instance(){
+   ansible-playbook $EXECUTING_BASH_PATH/commands/RENAME_AWS_INSTANCE.yml --extra-vars "tdd_provisioning=$CURRENT_PATH/$ATDD_PROJECT_CONFIG  vault_ec2_secret_access=$CURRENT_PATH/vault_ec2_secret_access.yml"  --vault-password-file   ./.vault_pass.txt
 }
 
 ec2_config(){
-    if [ ! -f $CURRENT_PATH/.log/tdd_ec2_inventory.ini ]  ||  [ ! -f $CURRENT_PATH/.log/ansible_tdd_inventory.yml ];
+    app_name=$1
+    if [ ! -f $CURRENT_PATH/.log/$app_name/tdd_ec2_inventory.ini ]  ||  [ ! -f $CURRENT_PATH/.log/$app_name/ansible_tdd_inventory.yml ];
     then
        ec2_create
     fi
 }
 
-remove_all_old_ec2_config(){
-    rm -rf $CURRENT_PATH/.log/tdd_ec2_inventory.ini
-    rm -rf $CURRENT_PATH/ansitlbe_tdd_inventory.yml
-}
-
 login_to_instance (){
-    SERVER_GROUP=$1
-    if [ ! -f $CURRENT_PATH/.log/tdd_ec2_inventory.ini ]; then
-             server_do_action CREATE
+    app_name=$1
+    SERVER_GROUP=$2
+    if [ ! -f $CURRENT_PATH/.log/$app_name/tdd_ec2_inventory.ini ]; then
+             server_do_action $app_name CREATE
     fi
 
     if [  -z "${SERVER_GROUP}" ]
@@ -168,7 +185,7 @@ login_to_instance (){
 
             break
         fi
-    done < $CURRENT_PATH/.log/tdd_ec2_inventory.ini
+    done < $CURRENT_PATH/.log/$app_name/tdd_ec2_inventory.ini
 
     if [ ! -z "${ansible_ssh_user}" ] && [ ! -z "${ansible_host}" ] && [ ! -z "${ansible_port}" ]
     then
@@ -178,21 +195,31 @@ login_to_instance (){
         then
             custom_ssh_private_key_file="-i ${ansible_ssh_private_key_file}"
         fi
+        echo "$custom_ssh_private_key_file";
         ssh $ansible_ssh_user@$ansible_host -p $ansible_port $custom_ssh_private_key_file
     fi
 
 }
 prepare_test_tools(){
-    ansible-playbook -i $CURRENT_PATH/.log/tdd_ec2_inventory.ini $EXECUTING_BASH_PATH/commands/PREPARE_TEST_TOOLS.yml
+    app_name=$1
+    ansible-playbook -i $CURRENT_PATH/.log/$app_name/tdd_ec2_inventory.ini $EXECUTING_BASH_PATH/commands/PREPARE_TEST_TOOLS.yml  --extra-vars "app_name=$app_name"
 }
 
 clear_test_tools(){
-    ansible-playbook -i $CURRENT_PATH/.log/tdd_ec2_inventory.ini $EXECUTING_BASH_PATH/commands/CLEAR_TEST_TOOLS.yml
+    app_name=$1
+    ansible-playbook -i $CURRENT_PATH/.log/$app_name/tdd_ec2_inventory.ini $EXECUTING_BASH_PATH/commands/CLEAR_TEST_TOOLS.yml  --extra-vars "app_name=$app_name"
 }
 
 do_verify(){
-    config=$1
-    prepare_test_tools
+    app_name=$1
+    config=$2
+
+    export APP_NAME="${app_name}"
+
+    if [ ! -z "${MANUAL_PREPARE_TEST_TOOL}" ] &&  $MANUAL_PREPARE_TEST_TOOL
+    then
+       prepare_test_tools
+    fi
 
     export ATDD_PLAYBOOK_DIRECTORY="${CURRENT_PATH}"
 
@@ -203,13 +230,19 @@ do_verify(){
 
     rake  -f $EXECUTING_BASH_PATH/commands/templates/serverspec/Rakefile spec
 
-    clear_test_tools
+
+    if [ ! -z "${MANUAL_PREPARE_TEST_TOOL}" ] &&  $MANUAL_PREPARE_TEST_TOOL
+    then
+       clear_test_tools
+    fi
+
 }
 do_converge(){
-    config=$1
-    rm $CURRENT_PATH/.log/verify-roles/data/* -rf
-    rm $CURRENT_PATH/.log/verify-roles/info/* -rf
-    ansible-playbook -i $CURRENT_PATH/.log/tdd_ec2_inventory.ini $CURRENT_PATH/$config   --vault-password-file   ./.vault_pass.txt
+    app_name=$1
+    config=$2
+    rm $CURRENT_PATH/.log/$app_name/verify-roles/data/* -rf
+    rm $CURRENT_PATH/.log/$app_name/verify-roles/info/* -rf
+    ansible-playbook  -i $CURRENT_PATH/.log/$app_name/tdd_ec2_inventory.ini $CURRENT_PATH/$config   --extra-vars "app_name=$app_name"  --vault-password-file   ./.vault_pass.txt
 
 }
 # My doesn't like uppercase characters, spaces or special characters, catch it now before we build everything out and then find out
@@ -253,68 +286,75 @@ case $command in
     create)
         ## RUN CREATE NEW EC2 INSTANCE
         ec2_create
+        ec2_rename_instance
+        ec2_update_inventory
     shift # past argument
     ;;
 
+    update-inventory)
+     ## RUN UPDATE EC2 INSTANCE
+        ec2_update_inventory
+    shift # past argument
+    ;;
     list)
         ## LIST ALL INSTANCE
         tput setaf 2 # change text to green color
-        cat  $CURRENT_PATH/.log/tdd_ec2_inventory.ini
+        cat  $CURRENT_PATH/.log/$app_name/tdd_ec2_inventory.ini
         tput sgr0  # reset text color
     shift # past argument
 
     ;;
 
     login) # login to first instance in a group
-        login_to_instance $config
+        login_to_instance  $app_name  $config
     shift # past argument
     ;;
 
     start)
-        ec2_config
-        server_do_action START
+        ec2_config $app_name
+        server_do_action  $app_name START
         # regenerate config
         ec2_create
     shift # past argument
     ;;
 
     stop)
-        ec2_config
-        server_do_action STOP
+#        ec2_config $app_name
+#        server_do_action  $app_name STOP
     shift # past argument
     ;;
 
     destroy)
-       ec2_config
-       server_do_action TERMINATE
+#       ec2_config $app_name
+#       server_do_action  $app_name TERMINATE
     shift # past argument
     ;;
 
     prepare-test-tools)
-        prepare_test_tools
+        prepare_test_tools $app_name
     shift # past argument
     ;;
 
     clear-test-tools)
-       clear_test_tools
+       clear_test_tools $app_name
 
     shift # past argument
     ;;
 
     test)
         # RUN ANSIBLE
-      do_converge $config
-      do_verify $config
+      do_converge  $app_name  $config
+      do_verify  $app_name  $config
     shift # past argument
     ;;
 
     converge)
-        do_converge $config
+        do_converge $app_name $config
     shift # past argument
     ;;
 
     verify)
-        do_verify $config
+        do_verify  $app_name $config
     shift # past argument
     ;;
 

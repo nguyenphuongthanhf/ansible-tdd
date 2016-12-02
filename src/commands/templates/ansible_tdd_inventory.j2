@@ -3,16 +3,16 @@
 {%- if (group_name !='ungrouped') and (group_name !='all') -%}
 {{group_name}}:
 {% for  host_name in hosts %}
-  - name: {{group_name}}{{index}}
+{% set index = hostvars[host_name]["ami_launch_index"] | int  + 1 %}
+  - name: {{host_name}}
     ansible_host: {{hostvars[host_name]["public_ip"]}}
     ansible_ssh_user: {{hostvars[host_name]["ansible_ssh_user"]}}
     ansible_port: {{hostvars[host_name]["ansible_port"]}}
     instance_id: {{hostvars[host_name]["instances_id"]}}
     aws_region: {{hostvars[host_name]["aws_region"]}}
-    internal_hostname: {{group_name}}{{index}}.internal
+    internal_hostname: {{host_name}}_internal
     private_ip: {{hostvars[host_name]["private_ip"]}}
     ansible_ssh_private_key_file: {{ansible_ssh_private_key_file|default("")}}
-{% set index = index + 1 %}
 {% endfor %}
 {%- endif %}
 {% endfor %}

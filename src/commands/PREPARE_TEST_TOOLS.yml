@@ -1,0 +1,13 @@
+---
+
+- hosts: all
+  tasks:
+    - name: Prepare folder store test tools
+      become: yes
+      file: path=/ansible-tdd state=directory recurse=true mode=0755
+    - name: copy testtools
+      become: yes
+      copy: src=templates/test-tools/test-tools.tar dest=/ansible-tdd  mode=0755
+    - name: unarchive
+      become: yes
+      unarchive: src=/ansible-tdd/test-tools.tar dest=/ansible-tdd copy=no

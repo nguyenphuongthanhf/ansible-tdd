@@ -1,0 +1,28 @@
+---
+- set_fact:
+    export_vars={{vars}}
+
+- name: "Creates folder store all variable of testcase {{testcase_name}}"
+  become: no
+  connection: local
+  file: path={{lookup('env','ATDD_PLAYBOOK_DIRECTORY')}}/.log/{{app_name}}/mockup/{{testcase_name}}/fact state=directory recurse=true
+
+- name: "Store all variables of testcase {{testcase_name}} with host: {{inventory_hostname}}"
+  become: no
+  connection: local
+  template:
+    src: "{{lookup('env','ATDD_SOURCE_DIRECTORY')}}/commands/templates/setup_fact.j2"
+    dest: "{{lookup('env','ATDD_PLAYBOOK_DIRECTORY')}}/.log/{{app_name}}/mockup/{{testcase_name}}/fact/{{inventory_hostname}}vars.fact"
+
+- name: "Store all variables of testcase {{testcase_name}} for all hosts"
+  become: no
+  connection: local
+  assemble:
+    src: "{{lookup('env','ATDD_PLAYBOOK_DIRECTORY')}}/.log/{{app_name}}/mockup/{{testcase_name}}/fact"
+    dest: "{{lookup('env','ATDD_PLAYBOOK_DIRECTORY')}}/.log/{{app_name}}/mockup/{{testcase_name}}/fact/vars.fact"
+
+
+- name: "Remove temporary variable file {{inventory_hostname}}vars.fact"
+  become: no
+  connection: local
+  file: path="{{lookup('env','ATDD_PLAYBOOK_DIRECTORY')}}/.log/{{app_name}}/mockup/{{testcase_name}}/fact/{{inventory_hostname}}vars.fact" state=absent

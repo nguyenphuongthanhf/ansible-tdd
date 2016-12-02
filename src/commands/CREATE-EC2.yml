@@ -3,7 +3,6 @@
 - hosts: localhost
   connection: local
   vars:
-    ec2_inventory: "./.log/tdd_ec2_inventory.ini"
     no_log: false
   pre_tasks:
     - include_vars: "{{ item }}"
@@ -16,34 +15,31 @@
       with_first_found:
         - "{{vault_ec2_secret_access}}"
   tasks:
-    - file:
-        dest: "{{ec2_inventory}}"
-        state: absent
-
+    - file: path="./.log/{{provision.app_name}}" state=directory mode=0775
     - name: Start the sandbox instances
       ec2:
     ## required
         aws_access_key: '{{ aws_access_key_id }}'
         aws_secret_key: '{{ aws_secret_access_key }}'
         key_name: '{{ item.key_name }}'
-        region: '{{ item.region|default("us-west-2") }}'
-        instance_tags: '{{ {"Name": provision.app_name~"-"~item.server_group,"app_name": provision.app_name,"group_server":item.server_group}|combine(item.instance_tags|default({}))  }}'
-        exact_count: '{{ item.num_instances|default(1) }}'
+        region: '{{ item.region }}'
+        instance_tags: '{{ {"Name": "unknown","app_name": provision.app_name,"server_group":item.server_group}|combine(item.instance_tags|default({}))  }}'
+        exact_count: '{{ item.num_instances }}'
         volumes: '{{ item.volumes|default([ { "device_name": "/dev/sda1", "volume_size": 8, "delete_on_termination": true }]) }}' 
     #more than usage
         
-        instance_type: '{{ item.instance_type|default("t2.nano") }}'
-        image: '{{ item.image|default("ami-ff44af9f") }}'
+        instance_type: '{{ item.instance_type }}'
+        image: '{{ item.image }}'
         assign_public_ip: '{{ item.assign_public_ip|default("yes") }}'
-        group: '{{ item.group|default(["anphabe-hq", "alltraffic-from-vpc"]) }}'
-        vpc_subnet_id: '{{ item.vpc_subnet_id|default("subnet-8bf53ed2") }}'
+        group: '{{ item.group }}'
+        vpc_subnet_id: '{{ item.vpc_subnet_id}}'
         wait: '{{ item.wait|default("yes") }}'
 
     ## less than usage        
-       
-        count_tag: '{{ {"Name": provision.app_name~"-"~item.server_group} }}'
-        
-        zone: '{{ item.zone|default("us-west-2c") }}' 
+        count_tag:
+          app_name: "{{provision.app_name}}"
+          server_group: "{{item.server_group}}"
+        zone: '{{ item.zone}}'
         instance_profile_name: '{{ item.instance_profile_name|default("") }}'
         kernel: '{{ item.kernel|default("") }}'
         monitoring: '{{ item.monitoring|default("no") }}'
@@ -68,18 +64,26 @@
       no_log: "{{no_log}}"
 
     - name: Add new instance to host group
-      add_host: name="{{item.0.item.server_group}}-{{item.1.id}}" hostname="{{ item.1.public_ip }}" groupname="{{item.0.item.server_group}}" ansible_ssh_user="{{ item.0.item.ansible_ssh_user }}" ansible_port="{{ item.0.item.ansible_port }}" instances_id="{{item.1.id}}" public_ip="{{ item.1.public_ip }}" aws_region={{item.1.region}} private_ip={{item.1.private_ip}} ansible_ssh_private_key_file={{ansible_ssh_private_key_file|default("")}}
+      add_host: name="{{item.1.id}}" hostname="{{ item.1.public_ip }}" groupname="{{item.0.item.server_group}}" ansible_ssh_user="{{ item.0.item.ansible_ssh_user }}" ansible_port="{{ item.0.item.ansible_port }}" instances_id="{{item.1.id}}" public_ip="{{ item.1.public_ip }}" aws_region={{item.1.region}} private_ip={{item.1.private_ip}} ansible_ssh_private_key_file={{ansible_ssh_private_key_file|default("")}} ami_launch_index={{item.1.ami_launch_index}}
+      when: item.1.tags.Name=='unknown'
       with_subelements:
         - ec2.results
         - tagged_instances
       no_log: "{{no_log}}"
 
-    - name: Log inventory File
-      template:
-        src: "templates/ec2-inventory.j2"
-        dest: "{{ec2_inventory}}"
+    - name: Add new instance to host group
+      add_host: name="{{item.1.tags.Name}}" hostname="{{ item.1.public_ip }}" groupname="{{item.0.item.server_group}}" ansible_ssh_user="{{ item.0.item.ansible_ssh_user }}" ansible_port="{{ item.0.item.ansible_port }}" instances_id="{{item.1.id}}" public_ip="{{ item.1.public_ip }}" aws_region={{item.1.region}} private_ip={{item.1.private_ip}} ansible_ssh_private_key_file={{ansible_ssh_private_key_file|default("")}} ami_launch_index={{item.1.ami_launch_index}}
+      when: item.1.tags.Name!='unknown'
+      with_subelements:
+        - ec2.results
+        - tagged_instances
+      no_log: "{{no_log}}"
 
-    - name: Log inventory File for serverspec
+    - name: Generate skeleton-instance-name
       template:
-        src: "templates/ansible_tdd_inventory.j2"
-        dest: "./.log/ansible_tdd_inventory.yml"
+        src: "templates/rename-instances/skeleton-instance-name.j2"
+        dest: "./.log/{{provision.app_name}}/skeleton-instance-name.yml"
+    - name: Generate real-instance-name
+      template:
+        src: "templates/rename-instances/real-instance-name.j2"
+        dest: "./.log/{{provision.app_name}}/real-instance-name.yml"

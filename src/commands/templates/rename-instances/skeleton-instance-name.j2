@@ -1,0 +1,7 @@
+skeleton_instance_name:
+{% for  server in provision.servers %}
+  {{server.server_group}}:
+{% for  index in range(1,server.num_instances+1) %}
+    - {{server.server_group}}{{index}}
+{% endfor %}
+{% endfor %}
