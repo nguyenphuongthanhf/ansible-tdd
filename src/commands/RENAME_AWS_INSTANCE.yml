@@ -18,16 +18,16 @@
         - "{{vault_ec2_secret_access}}"
   tasks:
     - set_fact:
-        ec2_inventory: "./.log/{{provision.app_name}}/tdd_ec2_inventory.ini"
+        ec2_inventory: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/tdd_ec2_inventory.ini"
     - name: different-skeleton-instance-name
       template:
         src: "templates/rename-instances/different-skeleton-instance-name.j2"
-        dest: "./.log/{{provision.app_name}}/skeleton-instance-name.yml"
+        dest: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/skeleton-instance-name.yml"
 
     - name: different-real-instance-name
       template:
         src: "templates/rename-instances/different-real-instance-name.j2"
-        dest: "./.log/{{provision.app_name}}/real-instance-name.yml"
+        dest: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/real-instance-name.yml"
 
     - name: update value for real_instance_name variable
       include_vars: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/real-instance-name.yml"
@@ -37,7 +37,7 @@
     - name: Generate must-rename-instance-name
       template:
         src: "templates/rename-instances/must-rename-instance-name.j2"
-        dest: "./.log/{{provision.app_name}}/must-rename-instance-name.yml"
+        dest: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/must-rename-instance-name.yml"
     - include_vars: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/must-rename-instance-name.yml"
 
     - file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/real-instance-name.yml" state=absent

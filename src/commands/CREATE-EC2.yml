@@ -15,7 +15,7 @@
       with_first_found:
         - "{{vault_ec2_secret_access}}"
   tasks:
-    - file: path="./.log/{{provision.app_name}}" state=directory mode=0775
+    - file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}" state=directory mode=0775
     - name: Start the sandbox instances
       ec2:
     ## required
@@ -82,8 +82,8 @@
     - name: Generate skeleton-instance-name
       template:
         src: "templates/rename-instances/skeleton-instance-name.j2"
-        dest: "./.log/{{provision.app_name}}/skeleton-instance-name.yml"
+        dest: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/skeleton-instance-name.yml"
     - name: Generate real-instance-name
       template:
         src: "templates/rename-instances/real-instance-name.j2"
-        dest: "./.log/{{provision.app_name}}/real-instance-name.yml"
+        dest: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/real-instance-name.yml"

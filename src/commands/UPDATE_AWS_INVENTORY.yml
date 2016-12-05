@@ -16,8 +16,8 @@
         - "{{vault_ec2_secret_access}}"
   tasks:
     - set_fact:
-        ec2_inventory: "./.log/{{provision.app_name}}/tdd_ec2_inventory.ini"
-    - file: path="./.log/{{provision.app_name}}" state=directory mode=0775
+        ec2_inventory: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/tdd_ec2_inventory.ini"
+    - file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}" state=directory mode=0775
     - ec2_remote_facts:
         aws_access_key: '{{aws_access_key_id }}'
         aws_secret_key: '{{ aws_secret_access_key }}'
@@ -45,4 +45,4 @@
     - name: Log inventory File for serverspec
       template:
         src: "templates/ansible_tdd_inventory.j2"
-        dest: "./.log/{{provision.app_name}}/ansible_tdd_inventory.yml"
+        dest: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/ansible_tdd_inventory.yml"

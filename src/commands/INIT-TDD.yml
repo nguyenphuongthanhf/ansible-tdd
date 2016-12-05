@@ -4,11 +4,11 @@
   connection: local
   tasks:
     - name: Creates log directory for ansible tdd
-      file: path=./.log state=directory recurse=true
-    - stat: path=./.log/README.markdown
+      file: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log state=directory recurse=true
+    - stat: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/README.markdown
       register: readme_markdown
     - name: Generate Readme markdown
-      copy: content="All temporary files when ansible tdd run, it will generate at here" dest=./.log/README.markdown
+      copy: content="All temporary files when ansible tdd run, it will generate at here" dest={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/README.markdown
       when: not readme_markdown.stat.exists
 
     - stat: path="./{{lookup('env','ATDD_PROJECT_CONFIG')}}"
