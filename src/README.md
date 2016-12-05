@@ -22,6 +22,17 @@ cd ansible-tdd
 ./install
 ```
 
+## Install with docker
+```
+docker pull nguyenphuongthanhf/ansible-tdd
+
+docker run -it --dns=LOCAL_DNS --name=atdd --volume=/home:/home atdd
+
+```
+
+
+
+
 ## Example ansible_tdd.yml file
 
 Support the same config of ansible ec2 module (http://docs.ansible.com/ansible/ec2_module.html)
