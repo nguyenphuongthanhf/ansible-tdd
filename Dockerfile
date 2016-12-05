@@ -2,8 +2,8 @@ from nguyenphuongthanhf/docker-ansible2:latest
 
 # Add default atdd user    
 RUN useradd -u 1000 -m --shell /bin/bash atdd && \
-    echo "atdd:P@ssw0rd!@#$%^" | chpasswd && \
-&& easy_install pip \
+    echo "atdd:P@ssw0rd!@#$%^" | chpasswd 
+RUN easy_install pip \
 && pip install boto \
 && apt-get install -y git \
 && apt-get install -y rubygems \
