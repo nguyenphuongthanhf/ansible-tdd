@@ -1,12 +1,14 @@
 # ansible-tdd
 ===========
 
+# With docker
+docker run -it --name=atdd --volume=/home:/home atdd 
 
 A small tool support deploy infrastructure with ansible & EC2. Support work with multi server EC2.
 
 The provisioner works by passing the ansible repository based on attributes in `ansible_tdd.yml` & calling `ansible-playbook`.
 
-![ansible-tdd](http://git.anphabe.net/ansible/ansible-tdd/raw/master/images/ansible-tdd.png "ansible-tdd, serverspec")
+![ansible-tdd](http://git.anphabe.net/ansible/ansible-tdd/raw/master/src/images/ansible-tdd.png "ansible-tdd, serverspec")
 
 
 ## Requirements
@@ -188,7 +190,7 @@ atdd verify
 
 ansible-tdd will run all role-testcase before run playbook testcase:
 
-![ansible-tdd](http://git.anphabe.net/ansible/ansible-tdd/raw/master/images/flow-verify.png "ansible-tdd, serverspec")
+![ansible-tdd](http://git.anphabe.net/ansible/ansible-tdd/raw/master/src/images/flow-verify.png "ansible-tdd, serverspec")
 
 ### How to write a test role
 Use command generate test role:
