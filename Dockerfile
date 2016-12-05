@@ -1,14 +1,16 @@
 from nguyenphuongthanhf/docker-ansible2:latest
 
+# Add default atdd user    
+RUN useradd -u 1000 -m --shell /bin/bash atdd && \
+    echo "atdd:P@ssw0rd!@#$%^" | chpasswd && \
+&& easy_install pip \
+&& pip install boto \
+&& apt-get install -y git \
+&& apt-get install -y rubygems \
+&& gem install serverspec 
+
 COPY src/ /ansible-tdd/ 
 COPY docker-entrypoint.sh /
-
-RUN easy_install pip
-RUN pip install boto 
-
-RUN apt-get install -y rubygems
-RUN gem install serverspec 
-
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
