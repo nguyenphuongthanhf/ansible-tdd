@@ -6,7 +6,8 @@
 # as in the --default example).
 # note: if this is set to > 0 the /etc/hosts part is not recognized ( may be a bug )
 
-EXECUTING_BASH_PATH="$(dirname "$(readlink -f "$0")")"
+#EXECUTING_BASH_PATH="$(dirname "$(readlink -f "$0")")"
+EXECUTING_BASH_PATH="${ATDD_HOME}"
 CURRENT_PATH="`pwd`"
 
 

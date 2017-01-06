@@ -10,7 +10,8 @@ RUN easy_install pip \
 && apt-get install -y rubygems \
 && gem install serverspec 
 
-COPY src/ /ansible-tdd/ 
+COPY src/ /ansible-tdd/
+ENV ATDD_HOME /ansible-tdd
 COPY docker-entrypoint.sh /
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

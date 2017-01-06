@@ -67,7 +67,7 @@
       add_host: name="{{item.1.id}}" hostname="{{ item.1.public_ip }}" groupname="{{item.0.item.server_group}}" ansible_ssh_user="{{ item.0.item.ansible_ssh_user }}" ansible_port="{{ item.0.item.ansible_port }}" instances_id="{{item.1.id}}" public_ip="{{ item.1.public_ip }}" aws_region={{item.1.region}} private_ip={{item.1.private_ip}} ansible_ssh_private_key_file={{ansible_ssh_private_key_file|default("")}} ami_launch_index={{item.1.ami_launch_index}}
       when: item.1.tags.Name=='unknown'
       with_subelements:
-        - ec2.results
+        - "{{ ec2.results }}"
         - tagged_instances
       no_log: "{{no_log}}"
 
@@ -75,7 +75,7 @@
       add_host: name="{{item.1.tags.Name}}" hostname="{{ item.1.public_ip }}" groupname="{{item.0.item.server_group}}" ansible_ssh_user="{{ item.0.item.ansible_ssh_user }}" ansible_port="{{ item.0.item.ansible_port }}" instances_id="{{item.1.id}}" public_ip="{{ item.1.public_ip }}" aws_region={{item.1.region}} private_ip={{item.1.private_ip}} ansible_ssh_private_key_file={{ansible_ssh_private_key_file|default("")}} ami_launch_index={{item.1.ami_launch_index}}
       when: item.1.tags.Name!='unknown'
       with_subelements:
-        - ec2.results
+        - "{{ ec2.results }}"
         - tagged_instances
       no_log: "{{no_log}}"
 
