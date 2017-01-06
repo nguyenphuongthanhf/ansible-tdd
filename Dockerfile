@@ -14,8 +14,16 @@ RUN apt-get update \
 
 COPY src/ /ansible-tdd/
 COPY docker-entrypoint.sh /
+COPY config.sh /
 
 ENV ATDD_HOME /ansible-tdd
+
+RUN /config.sh \
+&& chown atdd:atdd /ansible-tdd -R
+
+
+
+USER atdd
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 CMD ["/bin/bash"]

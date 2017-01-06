@@ -4,60 +4,63 @@
   connection: local
   tasks:
     - name: Creates log directory for ansible tdd
-      file: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log state=directory recurse=true
-    - stat: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/README.markdown
+      file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log" state=directory recurse=true
+    - stat: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/README.markdown"
       register: readme_markdown
     - name: Generate Readme markdown
-      copy: content="All temporary files when ansible tdd run, it will generate at here" dest={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/README.markdown
+      copy: content="All temporary files when ansible tdd run, it will generate at here" dest="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/README.markdown"
       when: not readme_markdown.stat.exists
 
     - stat: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/{{lookup('env','ATDD_PROJECT_CONFIG')}}"
       register: ansible_tdd_config
     - name: Create Provisioning template
-      copy: src=templates/ansible_tdd.yml dest="./{{lookup('env','ATDD_PROJECT_CONFIG')}}"
+      copy: src=templates/ansible_tdd.yml dest="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/{{lookup('env','ATDD_PROJECT_CONFIG')}}"
       when: not ansible_tdd_config.stat.exists
 
-    - stat: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.rspec
+    - stat: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.rspec"
       register: rspec_config
     - name: rspec template
-      copy: src=templates/serverspec/.rspec dest=./.rspec
+      copy: src=templates/serverspec/.rspec dest="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.rspec"
       when: not rspec_config.stat.exists
 
-    - stat: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.gitignore
+    - stat: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.gitignore"
       register: gitignore_config
     - name: Create gitignore
-      copy: src=templates/gitignore dest=./.gitignore
+      copy: src=templates/gitignore dest="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.gitignore"
       when: not gitignore_config.stat.exists
 
-    - stat: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/vault_ec2_secret_access.yml
+    - stat: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/vault_ec2_secret_access.yml"
       register: vault_ec2_secret_access
     - name: Create vault ec2
-      copy: src=templates/vault_ec2_secret_access.yml dest=./vault_ec2_secret_access.yml
+      copy: src=templates/vault_ec2_secret_access.yml dest="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/vault_ec2_secret_access.yml"
       when: not vault_ec2_secret_access.stat.exists
 
-    - stat: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.vault_pass.txt
+    - stat: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.vault_pass.txt"
       register: vault_pass
     - name: Create vault password
-      copy: src=templates/vault_pass.txt dest=./.vault_pass.txt
+      copy: src=templates/vault_pass.txt dest="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.vault_pass.txt"
       when: not vault_pass.stat.exists
 
 ## INIT EXAMPLE SERVER SPEC TEST CASE
     - name: Creates test directory
-      file: path=tests/ansible-tdd/integration state=directory recurse=true
+      file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/ansible-tdd/integration" state=directory recurse=true
 
-    - stat: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/ansible-tdd/integration/README.markdown
+    - stat: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/ansible-tdd/integration/README.markdown"
       register: readme_markdown
     - name: Create sample file playbook
-      copy: content="All testcase create at here" dest=./tests/ansible-tdd/integration/README.markdown
+      copy: content="All testcase create at here" dest="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/ansible-tdd/integration/README.markdown"
       when: not readme_markdown.stat.exists
 
-    - stat: path={{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/default.yml
+    - stat: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/default.yml"
       register: role_test
     - name:  Create role_test
       template:
         src: "templates/serverspec/template-testcase/default_test_role.j2"
-        dest: {{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/default.yml
+        dest: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/default.yml"
       when: not role_test.stat.exists
+
+    - name: Creates test directory
+      file: path="~/.ssh/config" state=directory recurse=true
 
     - stat: path=~/.ssh/config
       register: ssh_know_hosts

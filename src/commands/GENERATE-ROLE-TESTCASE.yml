@@ -6,13 +6,13 @@
   tasks:
 ## INIT EXAMPLE SERVER SPEC TEST CASE
     - name: Creates test directory
-      file: path="tests/ansible-tdd/integration/{{testcase}}" state=directory recurse=true
+      file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/ansible-tdd/integration/{{testcase}}" state=directory recurse=true
 
     - name: Creates test directory
-      file: path="tests/ansible-tdd/integration/{{testcase}}/spec" state=directory recurse=true
+      file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/ansible-tdd/integration/{{testcase}}/spec" state=directory recurse=true
 
-    - stat: path="./tests/ansible-tdd/integration/{{testcase}}/spec/{{testcase}}_spec.rb"
+    - stat: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/ansible-tdd/integration/{{testcase}}/spec/{{testcase}}_spec.rb"
       register: sample_spec
     - name: Create sample spec testcase
-      copy: src=templates/serverspec/role/template_spec.rb dest=./tests/ansible-tdd/integration/{{testcase}}/spec/{{testcase}}_spec.rb
+      copy: src=templates/serverspec/role/template_spec.rb dest="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/tests/ansible-tdd/integration/{{testcase}}/spec/{{testcase}}_spec.rb"
       when: not sample_spec.stat.exists
