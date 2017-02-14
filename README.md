@@ -2,6 +2,8 @@
 ===========
 
 # With docker
+
+docker run -v $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK) -e SSH_AUTH_SOCK=$SSH_AUTH_SOCK atdd command
 docker run -it --name=atdd --volume=/home:/home atdd 
 
 A small tool support deploy infrastructure with ansible & EC2. Support work with multi server EC2.

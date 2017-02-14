@@ -22,8 +22,13 @@ RUN /config.sh \
 && chown atdd:atdd /ansible-tdd -R
 
 
-
 USER atdd
-ENTRYPOINT ["/docker-entrypoint.sh"]
+WORKDIR /projects
+ENTRYPOINT ["/bin/bash"]
+#ENTRYPOINT ["/docker-entrypoint.sh"]
 
-CMD ["/bin/bash"]
+#CMD ["/bin/bash"]
+
+
+
+
