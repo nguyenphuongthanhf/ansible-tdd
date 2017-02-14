@@ -23,7 +23,7 @@ RUN /config.sh \
 
 
 USER atdd
-WORKDIR /projects
+WORKDIR /project
 ENTRYPOINT ["/bin/bash"]
 #ENTRYPOINT ["/docker-entrypoint.sh"]
 
