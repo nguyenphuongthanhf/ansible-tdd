@@ -24,10 +24,12 @@ RUN /config.sh \
 
 USER atdd
 WORKDIR /project
-ENTRYPOINT ["/bin/bash"]
-#ENTRYPOINT ["/docker-entrypoint.sh"]
 
-#CMD ["/bin/bash"]
+ENV ANSIBLE_ROLES_PATH /project/roles
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
+CMD ["/bin/bash"]
 
 
 
