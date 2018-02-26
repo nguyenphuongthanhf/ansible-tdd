@@ -1,4 +1,4 @@
-FROM nguyenphuongthanhf/docker-ansible2:latest
+FROM nguyenphuongthanhf/docker-ansible2:v2.4.3
 
 # Add default atdd user    
 RUN useradd -u 1000 -m --shell /bin/bash atdd && \

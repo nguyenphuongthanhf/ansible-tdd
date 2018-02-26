@@ -112,6 +112,8 @@ usage () {
     tput setaf 2 # change text to green color
   echo "Usage: ansible-tdd COMMAND APP_NAME CONFIG"
   echo "Commands:"
+  echo "    -v|--version:   View current ansible version"
+  echo "    ansible command:   View current ansible version. Ex: ansible-tdd ansible -v"
   echo "    init:       Generate scaffolding for ansible-tdd"
   echo "    generate-role-testcase:       Generate scaffolding for role testcase"
   echo "    generate-playbook-testcase:       Generate scaffolding for playbook"
@@ -395,6 +397,16 @@ case $command in
 
     converge)
         do_converge $app_name $config
+    shift # past argument
+    ;;
+
+    ansible)
+        ansible  $app_name
+    shift # past argument
+    ;;
+
+    -v|--version)
+        ansible  --version
     shift # past argument
     ;;
 
