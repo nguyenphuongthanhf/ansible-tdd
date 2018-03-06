@@ -6,7 +6,7 @@ RUN useradd -u 1000 -m --shell /bin/bash atdd && \
 
 RUN apt-get update \
 && easy_install pip \
-&& pip install boto \
+&& pip install boto3 \
 && chown atdd:atdd /etc/ansible/roles \
 && apt-get install -y git \
 && apt-get install -y rubygems \
