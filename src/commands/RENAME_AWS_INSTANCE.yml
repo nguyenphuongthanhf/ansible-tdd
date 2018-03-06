@@ -3,7 +3,7 @@
 - hosts: localhost
   connection: local
   vars:
-    no_log: false
+    mio_no_log: false
   pre_tasks:
     - include_vars: "{{ item }}"
       with_first_found:
