@@ -289,7 +289,7 @@ do_converge(){
     config=$2
     rm $CURRENT_PATH/.log/$app_name/verify-roles/data/* -rf
     rm $CURRENT_PATH/.log/$app_name/verify-roles/info/* -rf
-    ansible-playbook  -i $CURRENT_PATH/.log/$app_name/tdd_ec2_inventory.ini $CURRENT_PATH/$config   --extra-vars "app_name=$app_name"  --vault-password-file   ./.vault_pass.txt
+    ansible-playbook  -i $CURRENT_PATH/.log/$app_name/tdd_ec2_inventory.ini $CURRENT_PATH/$config   --extra-vars "app_name=$app_name   vault_ec2_secret_access=$CURRENT_PATH/vault_ec2_secret_access.yml"  --vault-password-file   ./.vault_pass.txt
 
 }
 # My doesn't like uppercase characters, spaces or special characters, catch it now before we build everything out and then find out

@@ -92,4 +92,4 @@
   register: ec2
   with_items:
     - "{{provision.servers}}"
-  no_log: "{{no_log}}"
+  no_log: "{{mio_no_log}}"
