@@ -18,18 +18,6 @@
     - set_fact:
         ec2_inventory: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/tdd_ec2_inventory.ini"
     - file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}" state=directory mode=0775
-     - ec2_instance_facts:
-         aws_access_key: '{{aws_access_key_id }}'
-         aws_secret_key: '{{ aws_secret_access_key }}'
-         region: "{{item.region}}"
-         filters:
-           "tag:app_name": "{{provision.app_name}}"
-           "tag:server_group": "{{item.server_group}}"
-       with_items: "{{provision.servers}}"
-       register: ec3
-     - debug:
-       var: ec3
-       verbosity: 4
     - ec2_instance_facts:
         aws_access_key: '{{aws_access_key_id }}'
         aws_secret_key: '{{ aws_secret_access_key }}'
