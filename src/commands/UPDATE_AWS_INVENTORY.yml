@@ -18,6 +18,18 @@
     - set_fact:
         ec2_inventory: "{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}/tdd_ec2_inventory.ini"
     - file: path="{{lookup('env','BASENAME_PLAYBOOK_DIRECTORY')}}/.log/{{provision.app_name}}" state=directory mode=0775
+     - ec2_instance_facts:
+         aws_access_key: '{{aws_access_key_id }}'
+         aws_secret_key: '{{ aws_secret_access_key }}'
+         region: "{{item.region}}"
+         filters:
+           "tag:app_name": "{{provision.app_name}}"
+           "tag:server_group": "{{item.server_group}}"
+       with_items: "{{provision.servers}}"
+       register: ec3
+     - debug:
+       var: ec3
+       verbosity: 4
     - ec2_instance_facts:
         aws_access_key: '{{aws_access_key_id }}'
         aws_secret_key: '{{ aws_secret_access_key }}'
@@ -29,8 +41,10 @@
       with_items: "{{provision.servers}}"
       no_log: "{{mio_no_log}}"
 
-
-    - add_host: name="{{item.1.tags.Name}}" hostname="{{ item.1.public_dns_name }}" groupname="{{item.0.item.server_group | default('all')}}" ansible_ssh_user="{{item.0.item.ansible_ssh_user}}" ansible_port="{{item.0.item.ansible_port}}" instances_id="{{item.1.id}}" public_ip="{{ item.1.public_ip_address }}" aws_region={{item.1.region}} private_ip={{item.1.private_ip_address}} ansible_ssh_private_key_file={{ansible_ssh_private_key_file|default("")}} ami_launch_index={{item.1.ami_launch_index}}
+    - debug:
+      var: ec2
+      verbosity: 4
+    - add_host: name="{{item.1.tags.Name}}" hostname="{{ item.1.public_dns_name }}" groupname="{{item.0.item.server_group | default('all')}}" ansible_ssh_user="{{item.0.item.ansible_ssh_user}}" ansible_port="{{item.0.item.ansible_port}}" instances_id="{{item.1.instance_id}}" public_ip="{{ item.1.public_ip_address }}" aws_region="{{item.1.placement.availability_zone}}" private_ip="{{item.1.private_ip_address}}" ansible_ssh_private_key_file="{{ansible_ssh_private_key_file|default('')}}" ami_launch_index="{{item.1.ami_launch_index}}"
       when: item.1.state == "running"
       with_subelements:
         - "{{ ec2.results }} "
