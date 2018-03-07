@@ -24,7 +24,7 @@
         region: "{{item.region}}"
         filters:
           "tag:app_name": "{{provision.app_name}}"
-          "server_group": "{{item.server_group}}"
+          "tag:server_group": "{{item.server_group}}"
       register: ec2
       with_items: "{{provision.servers}}"
       no_log: "{{mio_no_log}}"
