@@ -3,7 +3,7 @@
 - hosts: localhost
   connection: local
   vars:
-    mio_no_log: true
+    mio_no_log: false
   pre_tasks:
     - include_vars: "{{ item }}"
       with_first_found:
@@ -24,7 +24,7 @@
         region: "{{item.region}}"
         filters:
           "tag:app_name": "{{provision.app_name}}"
-          "tag:server_group": "{{item.server_group}}"
+          "server_group": "{{item.server_group}}"
       register: ec2
       with_items: "{{provision.servers}}"
       no_log: "{{mio_no_log}}"
