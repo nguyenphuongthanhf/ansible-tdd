@@ -211,6 +211,9 @@ ec2_config(){
 login_to_instance (){
     app_name=$1
     SERVER_GROUP=$2
+    INSTANCE_NUMBER=$3
+    GROUP_SUFFIX_SYMBOL="]"
+
     if [ ! -f $CURRENT_PATH/.log/$app_name/tdd_ec2_inventory.ini ]; then
              server_do_action $app_name CREATE
     fi
@@ -225,10 +228,34 @@ login_to_instance (){
         if [[ "$var" == "[$SERVER_GROUP]" ]]
         then
             # only get a first instance of group
-            read var val
-            echo "$val" >>  $CURRENT_PATH/SSH_INFO.cnf
-            source $CURRENT_PATH/SSH_INFO.cnf  # extract config
-            rm -rf $CURRENT_PATH/SSH_INFO.cnf
+            #read var val
+            #echo "$val" >>  $CURRENT_PATH/SSH_INFO.cnf
+            #source $CURRENT_PATH/SSH_INFO.cnf  # extract config
+            #rm -rf $CURRENT_PATH/SSH_INFO.cnf
+
+            FINDED_INSTANCE=0
+			while [  $FINDED_INSTANCE == 0 ]; do
+
+			  	#"+++++++++++++++++++++START READ NEW SERVER GROUP INFO++++++++++++++++++++++"
+
+				read name_server server_info
+				if [ "${name_server/$GROUP_SUFFIX_SYMBOL}" = "${name_server}" ] ;
+				then
+					if [ "${name_server}" == "${SERVER_GROUP}${INSTANCE_NUMBER}" ] ;
+					then
+					 	echo "$server_info" >>  $CURRENT_PATH/SSH_INFO.cnf
+						source $CURRENT_PATH/SSH_INFO.cnf  # extract config
+			            rm -rf $CURRENT_PATH/SSH_INFO.cnf
+			            FINDED_INSTANCE=1
+
+					fi
+				else
+				 	#exit because already go to other server group
+				   	FINDED_INSTANCE=1
+				fi
+
+				#"+++++++++++++++++++++DONE++++++++++++++++++++++"
+			done
 
             break
         fi
@@ -353,7 +380,10 @@ case $command in
     ;;
 
     login) # login to first instance in a group
-        login_to_instance  $app_name  $config
+        if [[ -z "${opt}" ]] ; then
+          opt=1
+        fi
+        login_to_instance  $app_name  $config $opt
     shift # past argument
     ;;
 
