@@ -32,7 +32,7 @@
     - debug:
       var: "{{ec2}}"
 
-    - add_host: name="{{item.1.tags.Name}}" hostname="{{ item.1.public_dns_name }}" groupname="{{item.0.item.server_group | default('all')}}" ansible_ssh_user="{{item.0.item.ansible_ssh_user}}" ansible_port="{{item.0.item.ansible_port}}" instances_id="{{item.1.instance_id}}" public_ip="{{ item.1.public_ip_address }}" aws_region="{{item.1.placement.availability_zone}}" private_ip="{{item.1.private_ip_address}}" ansible_ssh_private_key_file="{{ansible_ssh_private_key_file|default('')}}" ami_launch_index="{{item.1.ami_launch_index}}"
+    - add_host: name="{{item.1.tags.Name}}" hostname="{{ item.1.public_dns_name }}" groupname="{{item.0.item.server_group | default('all')}}" ansible_ssh_user="{{item.0.item.ansible_ssh_user}}" ansible_port="{{item.0.item.ansible_port}}" instances_id="{{item.1.instance_id}}" public_ip="{{ item.1.public_ip_address }}" aws_region="{{item.0.item.region}}" private_ip="{{item.1.private_ip_address}}" ansible_ssh_private_key_file="{{ansible_ssh_private_key_file|default('')}}" ami_launch_index="{{item.1.ami_launch_index}}"
       when: item.1.state.name == "running"
       with_subelements:
         - "{{ ec2.results }} "
