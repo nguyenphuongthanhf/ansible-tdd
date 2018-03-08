@@ -212,6 +212,9 @@ login_to_instance (){
     app_name=$1
     SERVER_GROUP=$2
     INSTANCE_NUMBER=$3
+
+    echo "Instance_number: ${SERVER_GROUP}${INSTANCE_number}"
+
     GROUP_SUFFIX_SYMBOL="]"
 
     if [ ! -f $CURRENT_PATH/.log/$app_name/tdd_ec2_inventory.ini ]; then
@@ -269,7 +272,8 @@ login_to_instance (){
         then
             custom_ssh_private_key_file="-i ${ansible_ssh_private_key_file}"
         fi
-        echo "$custom_ssh_private_key_file";
+        echo "${custom_ssh_private_key_file}";
+        echo "${ansible_host} : ${ansible_port}";
         ssh $ansible_ssh_user@$ansible_host -p $ansible_port $custom_ssh_private_key_file
     fi
 
