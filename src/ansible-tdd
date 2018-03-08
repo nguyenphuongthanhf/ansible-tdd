@@ -213,7 +213,7 @@ login_to_instance (){
     SERVER_GROUP=$2
     INSTANCE_NUMBER=$3
 
-    echo "Instance_number: ${SERVER_GROUP}${INSTANCE_number}"
+    echo "Instance_number: ${SERVER_GROUP}${INSTANCE_NUMBER}"
 
     GROUP_SUFFIX_SYMBOL="]"
 
@@ -387,7 +387,7 @@ case $command in
         if [[ -z "${opt}" ]] ; then
           opt=1
         fi
-        login_to_instance  $app_name  $config $opt
+        login_to_instance  $app_name  $config  $opt
     shift # past argument
     ;;
 
