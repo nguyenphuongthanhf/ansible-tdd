@@ -4,3 +4,5 @@ VERIFY_TURN_OFF_FAIL_ON_ERROR=false
 MANUAL_PREPARE_TEST_TOOL=false
 # Project config file name
 ATDD_PROJECT_CONFIG=provision.yml
+# Turn off verify roles
+ATDD_TURN_OFF_INVOKE_VERIFY_ROLE=off

@@ -23,7 +23,14 @@ STDERR_OUTPUT="$CURRENT_PATH/serverspec_stderr"
 STDOUT_OUTPUT="$CURRENT_PATH/serverspec_stdout"
 export BASENAME_PLAYBOOK_DIRECTORY="${CURRENT_PATH}"
 export ATDD_SOURCE_DIRECTORY="${EXECUTING_BASH_PATH}"
+
 export ATDD_INVOKE_VERIFY_ROLE="${EXECUTING_BASH_PATH}"/commands/templates/ansible_tdd_invoke_verify_role.yml
+if [ ! -z "${ATDD_TURN_OFF_INVOKE_VERIFY_ROLE}" ]
+then
+   export ATDD_INVOKE_VERIFY_ROLE="${EXECUTING_BASH_PATH}"/commands/templates/ansible_tdd_turn_off_invoke_verify_role.yml
+fi
+
+
 export ATDD_SETUP_MOCKUP="${EXECUTING_BASH_PATH}"/commands/templates/setup-mockup.yml
 
 export ATDD_ROLE_SPEC_HELPER="${EXECUTING_BASH_PATH}/commands/templates/serverspec/role/spec_helper.rb"
